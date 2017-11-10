@@ -36,7 +36,6 @@ import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.WeightedRandom;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -281,7 +280,7 @@ public class CubeWorldEntitySpawner extends WorldEntitySpawner {
 
                     if (canCreatureTypeSpawnAtLocation(EntityLiving.SpawnPlacementType.ON_GROUND, (World) world, pos)) {
                         EntityLiving spawnedEntity;
-                        if (world.getBlockState(pos).getBlock() == Blocks.END_STONE)    {
+                        if (blockY > 16000)    {
                             currEntry.entityClass = EntityEnderman.class;
                         }
 

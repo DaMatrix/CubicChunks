@@ -23,8 +23,9 @@
  */
 package cubicchunks;
 
-import cubicchunks.network.PacketDispatcher;
+import com.google.common.collect.ImmutableList;
 import cubicchunks.network.PacketCubicWorldData;
+import cubicchunks.network.PacketDispatcher;
 import cubicchunks.server.SpawnCubes;
 import cubicchunks.util.IntRange;
 import cubicchunks.util.ReflectionUtil;
@@ -35,8 +36,13 @@ import cubicchunks.world.WorldSavedCubicChunksData;
 import cubicchunks.world.provider.ICubicWorldProvider;
 import cubicchunks.world.type.ICubicWorldType;
 import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.monster.EntityEnderman;
+import net.minecraft.entity.monster.EntityShulker;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -44,18 +50,23 @@ import net.minecraft.world.WorldServerMulti;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.ChunkProviderServer;
+import net.minecraft.world.storage.loot.LootEntry;
+import net.minecraft.world.storage.loot.LootEntryTable;
+import net.minecraft.world.storage.loot.LootPool;
+import net.minecraft.world.storage.loot.RandomValueRange;
+import net.minecraft.world.storage.loot.conditions.LootCondition;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.LootTableLoadEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
-import java.util.List;
-
 import javax.annotation.ParametersAreNonnullByDefault;
-
-import com.google.common.collect.ImmutableList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -153,5 +164,33 @@ public class CommonEventHandler {
     private boolean shouldSkipWorld(World world) {
         return !allowedServerWorldClasses.contains(world.getClass())
                 || !allowedServerChunkProviderClasses.contains(world.getChunkProvider().getClass());
+    }
+
+    @SubscribeEvent
+    public void lootLoad(LootTableLoadEvent evt) {
+        if (evt.getName().toString().equals("minecraft:chests/simple_dungeon")) {
+            evt.getTable().addPool(getInjectPool("dungeon"));
+        }
+    }
+
+    private LootPool getInjectPool(String entryName) {
+        return new LootPool(new LootEntry[] { getInjectEntry(entryName, 1) }, new LootCondition[0], new RandomValueRange(2), new RandomValueRange(0, 1), "cc_pool");
+    }
+
+    private LootEntryTable getInjectEntry(String name, int weight) {
+        return new LootEntryTable(new ResourceLocation("cubicchunks", name), weight, 0, new LootCondition[0], "cc_entry");
+    }
+
+    @SubscribeEvent
+    public void onMobDrops(LivingDropsEvent event)  {
+        if (event.getEntity() instanceof EntityEnderman)    {
+            if (ThreadLocalRandom.current().nextFloat() > 0.98f) { // 2% chance
+                event.getDrops().add(new EntityItem(event.getEntity().world, event.getEntity().posX, event.getEntity().posY, event.getEntity().posZ, new ItemStack(Items.ELYTRA, 1)));
+            }
+        } else if (event.getEntity() instanceof EntityShulker)  {
+            if (ThreadLocalRandom.current().nextFloat() > 0.95f) { // 5% chance
+                event.getDrops().add(new EntityItem(event.getEntity().world, event.getEntity().posX, event.getEntity().posY, event.getEntity().posZ, new ItemStack(Blocks.END_ROD, ThreadLocalRandom.current().nextInt(3) + 1)));
+            }
+        }
     }
 }

@@ -23,23 +23,28 @@
  */
 package cubicchunks.asm.mixin.fixes.common;
 
-import static cubicchunks.asm.JvmNames.CHUNK_IS_POPULATED;
-
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
-
 import cubicchunks.util.Coords;
 import cubicchunks.world.ICubicWorld;
 import cubicchunks.world.column.IColumn;
 import cubicchunks.world.cube.Cube;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
+import net.minecraft.init.Biomes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldProvider;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.border.WorldBorder;
 import net.minecraft.world.chunk.Chunk;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import static cubicchunks.asm.JvmNames.CHUNK_IS_POPULATED;
 
 /**
  * Currently only fixes markAndNotifyBlock checking if chunk is populated instead of checking cubes.
@@ -49,7 +54,9 @@ public abstract class MixinWorld implements ICubicWorld {
 
     @Shadow public abstract WorldBorder getWorldBorder();
 
-    @Shadow public abstract boolean isInsideWorldBorder(Entity entity);
+    @Shadow @Final public WorldProvider provider;
+
+    public BlockPos addon_forcedSpawn = new BlockPos(0, 64, 0);
 
     // note: markAndNotifyBlock has @Nullable on chunk, this will never be null here,
     // because this isgit lo the chunk on which isPopulated is called
@@ -64,5 +71,21 @@ public abstract class MixinWorld implements ICubicWorld {
         IColumn IColumn = (IColumn) chunk;
         Cube cube = IColumn.getCube(Coords.blockToCube(pos.getY()));
         return cube.isFullyPopulated();
+    }
+
+    @Inject(method = "Lnet/minecraft/world/World;getBiome(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/world/biome/Biome;", at = @At("HEAD"), cancellable = true)
+    public void checkEnd(BlockPos pos, CallbackInfoReturnable<Biome> callbackInfoReturnable)    {
+        if (pos.y > 16000)  {
+            callbackInfoReturnable.setReturnValue(Biomes.SKY);
+        }
+    }
+
+    /**
+     * why do i need a javadoc for this wtf mixin
+     * @author DaPorkchop_
+     */
+    @Overwrite
+    public BlockPos getSpawnPoint() {
+        return addon_forcedSpawn;
     }
 }

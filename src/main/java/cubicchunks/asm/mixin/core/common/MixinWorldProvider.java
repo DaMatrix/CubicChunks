@@ -29,6 +29,7 @@ import cubicchunks.world.SpawnPlaceFinder;
 import cubicchunks.world.provider.ICubicWorldProvider;
 import cubicchunks.world.type.ICubicWorldType;
 import cubicchunks.worldgen.generator.ICubeGenerator;
+import cubicchunks.worldgen.generator.custom.NetherTerrainGenerator;
 import cubicchunks.worldgen.generator.vanilla.VanillaCompatibilityGenerator;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.BlockPos;
@@ -59,6 +60,8 @@ public abstract class MixinWorldProvider implements ICubicWorldProvider {
     @Shadow public abstract IChunkGenerator createChunkGenerator();
 
     @Shadow(remap = false) public abstract int getActualHeight();
+
+    @Shadow public abstract long getSeed();
 
     private boolean getActualHeightForceOriginalFlag = false;
 
@@ -94,6 +97,9 @@ public abstract class MixinWorldProvider implements ICubicWorldProvider {
         }
         if (this.getDimensionType() == DimensionType.OVERWORLD && cubicWorld().getWorldType() instanceof ICubicWorldType) {
             return ((ICubicWorldType) cubicWorld().getWorldType()).createCubeGenerator(cubicWorld());
+        }
+        if (this.getDimensionType() == DimensionType.NETHER) {
+            return new NetherTerrainGenerator(cubicWorld(), this.getSeed());
         }
         return new VanillaCompatibilityGenerator(this.createChunkGenerator(), cubicWorld());
     }

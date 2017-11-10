@@ -30,7 +30,6 @@ import cubicchunks.api.worldgen.populator.ICubicPopulator;
 import cubicchunks.util.Box;
 import cubicchunks.util.Coords;
 import cubicchunks.util.CubePos;
-import cubicchunks.util.MaxSizeHashMap;
 import cubicchunks.world.ICubicWorld;
 import cubicchunks.world.cube.Cube;
 import cubicchunks.worldgen.generator.BasicCubeGenerator;
@@ -47,7 +46,9 @@ import cubicchunks.worldgen.generator.custom.structure.CubicStructureGenerator;
 import cubicchunks.worldgen.generator.custom.structure.feature.CubicFeatureGenerator;
 import cubicchunks.worldgen.generator.custom.structure.feature.CubicStrongholdGenerator;
 import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.block.BlockChorusFlower;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.monster.EntityShulker;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
@@ -85,7 +86,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     private IBuilder terrainBuilder;
     private final BiomeSource biomeSource;
     private final CustomGeneratorSettings conf;
-    private final MaxSizeHashMap<Long, Chunk> endChunkCache = new MaxSizeHashMap<>(256);
+    private Chunk endChunkCache = null;
     private final ChunkGeneratorEnd endChunkGenerator;
 
     //TODO: Implement more structures
@@ -186,6 +187,40 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
 
             if (cube.getY() >= 1000 && cube.getY() <= 1015) {
                 endChunkGenerator.populate(cube.getX(), cube.getZ());
+
+                double j = rand.nextDouble();
+                if (j > 0.9) {
+                    BlockPos blockPos = new BlockPos(rand.nextInt(16) + cube.getCoords().getXCenter(), 16080, rand.nextInt(16) + cube.getCoords().getZCenter());
+                    for (; blockPos.y > 16030; blockPos.y--)  {
+                        if (world.getBlockState(blockPos).getBlock() == Blocks.END_STONE)   {
+                            break;
+                        }
+                    }
+
+                    if (blockPos.getY() > 16032) {
+                        blockPos.y += 1;
+                        BlockChorusFlower.generatePlant(World.class.cast(world), blockPos, rand, 8);
+                    }
+                }
+
+                j = rand.nextDouble();
+                if (j > 0.99) {
+                    BlockPos blockPos = new BlockPos(rand.nextInt(16) + cube.getCoords().getXCenter(), 16080, rand.nextInt(16) + cube.getCoords().getZCenter());
+                    for (; blockPos.y > 16030; blockPos.y--)  {
+                        if (world.getBlockState(blockPos).getBlock() == Blocks.END_STONE)   {
+                            break;
+                        }
+                    }
+
+                    if (blockPos.getY() > 16032) {
+                        blockPos.y += 1;
+                        EntityShulker shulker = new EntityShulker(World.class.cast(world));
+                        world.spawnEntity(shulker);
+                        shulker.setPosition(blockPos.x + .5f, blockPos.y, blockPos.z + .5f);
+                    }
+                }
+
+                return;
             }
 
             ICubicPopulator decorator = biome.getDecorator();
@@ -231,13 +266,23 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
 
         final IBlockState air = Blocks.AIR.getDefaultState();
         if (cubeY >= 1000 && cubeY <= 1015) { //Generate End
-            long chunkHash = (((long) cubeX) << 32) | (cubeZ & 0xffffffffL);
-            Chunk chunk = endChunkCache.get(chunkHash);
-            if (chunk == null)  {
+            Chunk chunk = endChunkCache;
+            if (chunk == null || chunk.x != cubeX || chunk.z != cubeZ)  {
                 chunk = endChunkGenerator.generateChunk(cubeX, cubeZ);
-                endChunkCache.put(chunkHash, chunk);
+                endChunkCache = chunk;
             }
-            int yOffset = (cubeY - 1000) * 16;
+            if (!optimizationHack) {
+                optimizationHack = true;
+                // Recursive generation
+                for (int y = 1000; y < 1016; y++) {
+                    if (y == cubeY) {
+                        continue;
+                    }
+                    world.getCubeFromCubeCoords(cubeX, y, cubeZ);
+                }
+                optimizationHack = false;
+            }
+
             ExtendedBlockStorage storage = chunk.getBlockStorageArray()[cubeY - 1000];
             if (storage != null && !storage.isEmpty()) {
                 for (int x = 0; x < Cube.SIZE; x++) {
@@ -250,6 +295,11 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                 }
             }
         }
+
+        if (cubeY >= 1000)   {
+            return;
+        }
+
         BlockPos start = new BlockPos(cubeX * 4, cubeY * 2, cubeZ * 4);
         BlockPos end = start.add(4, 2, 4);
         terrainBuilder.forEachScaled(start, end, new Vec3i(4, 8, 4),
@@ -261,6 +311,8 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                 }
         );
     }
+
+    private boolean optimizationHack = false;
 
     /**
      * Retrieve the blockstate appropriate for the specified builder entry

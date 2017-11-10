@@ -23,15 +23,7 @@
  */
 package cubicchunks.worldgen.generator.custom.structure.feature;
 
-import static cubicchunks.util.Coords.blockCeilToCube;
-import static cubicchunks.util.Coords.blockToCube;
-import static cubicchunks.util.Coords.cubeToCenterBlock;
-import static java.lang.Math.cos;
-import static java.lang.Math.round;
-import static java.lang.Math.sin;
-
 import com.google.common.collect.Lists;
-import cubicchunks.util.Coords;
 import cubicchunks.util.CubePos;
 import cubicchunks.worldgen.generator.custom.CustomGeneratorSettings;
 import net.minecraft.util.math.BlockPos;
@@ -44,12 +36,14 @@ import net.minecraft.world.gen.structure.StructureStrongholdPieces;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import javax.annotation.Nullable;
+import static cubicchunks.util.Coords.*;
+import static java.lang.Math.*;
 
 public class CubicStrongholdGenerator extends CubicFeatureGenerator {
 
@@ -61,11 +55,11 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
     private final CustomGeneratorSettings conf;
 
     public CubicStrongholdGenerator(CustomGeneratorSettings conf) {
-        super(4);
+        super(3);
         this.conf = conf;
         this.structureCoords = new CubePos[128];
-        this.distance = 32.0D;
-        this.spread = 3;
+        this.distance = 16.0D;
+        this.spread = 2;
         this.allowedBiomes = Lists.<Biome>newArrayList();
 
         for (Biome biome : ForgeRegistries.BIOMES) {
