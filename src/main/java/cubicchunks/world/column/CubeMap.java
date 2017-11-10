@@ -28,15 +28,10 @@ import cubicchunks.world.cube.Cube;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.*;
 
 /**
  * Stores cubes for columns
@@ -96,7 +91,7 @@ public class CubeMap implements Iterable<Cube> {
         int top = binarySearch(endY + 1); // subList()'s second arg is exclusive so we need to add 1
 
         if (bottom < cubes.size() && top <= cubes.size()) {
-            return reverse ? Lists.reverse(cubes.subList(bottom, top)) : cubes.subList(bottom, top);
+            return reverse ? new ArrayList<>(Lists.reverse(cubes.subList(bottom, top))) : cubes.subList(bottom, top);
         } else {
             return Collections.emptyList();
         }

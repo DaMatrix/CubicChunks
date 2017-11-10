@@ -23,21 +23,21 @@
  */
 package cubicchunks.worldgen.generator.custom.populator;
 
-import static cubicchunks.worldgen.generator.custom.populator.PopulatorUtils.getSurfaceForCube;
-
 import cubicchunks.api.worldgen.biome.CubicBiome;
 import cubicchunks.api.worldgen.populator.ICubicPopulator;
 import cubicchunks.util.CubePos;
 import cubicchunks.world.ICubicWorld;
 import cubicchunks.world.cube.Cube;
 import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeSnow;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Random;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+import static cubicchunks.worldgen.generator.custom.populator.PopulatorUtils.getSurfaceForCube;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -50,7 +50,7 @@ public class SnowBiomeDecorator implements ICubicPopulator {
                 int xOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
                 int zOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
                 BlockPos blockPos = getSurfaceForCube(world, pos, xOffset, zOffset, 0, PopulatorUtils.SurfaceType.SOLID);
-                if (blockPos != null) {
+                if (blockPos != null && world.getBlockState(blockPos).getBlock() != Blocks.END_STONE) {
                     snow.iceSpike.generate((World) world, random, blockPos);
                 }
             }
@@ -59,7 +59,7 @@ public class SnowBiomeDecorator implements ICubicPopulator {
                 int xOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
                 int zOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
                 BlockPos blockPos = getSurfaceForCube(world, pos, xOffset, zOffset, 0, PopulatorUtils.SurfaceType.SOLID);
-                if (blockPos != null) {
+                if (blockPos != null && world.getBlockState(blockPos).getBlock() != Blocks.END_STONE) {
                     snow.icePatch.generate((World) world, random, blockPos);
                 }
             }

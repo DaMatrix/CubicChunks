@@ -23,10 +23,6 @@
  */
 package cubicchunks.worldgen.generator.custom;
 
-import static cubicchunks.util.Coords.blockToLocal;
-import static cubicchunks.worldgen.generator.custom.builder.IBuilder.NEGATIVE;
-import static cubicchunks.worldgen.generator.custom.builder.IBuilder.POSITIVE;
-
 import cubicchunks.CubicChunks;
 import cubicchunks.api.worldgen.biome.CubicBiome;
 import cubicchunks.api.worldgen.populator.CubePopulatorEvent;
@@ -34,6 +30,7 @@ import cubicchunks.api.worldgen.populator.ICubicPopulator;
 import cubicchunks.util.Box;
 import cubicchunks.util.Coords;
 import cubicchunks.util.CubePos;
+import cubicchunks.util.MaxSizeHashMap;
 import cubicchunks.world.ICubicWorld;
 import cubicchunks.world.cube.Cube;
 import cubicchunks.worldgen.generator.BasicCubeGenerator;
@@ -54,20 +51,24 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.relauncher.Side;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import net.minecraft.world.gen.ChunkGeneratorEnd;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.lwjgl.input.Keyboard;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.Random;
 import java.util.function.ToIntFunction;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
+import static cubicchunks.util.Coords.blockToLocal;
+import static cubicchunks.worldgen.generator.custom.builder.IBuilder.NEGATIVE;
+import static cubicchunks.worldgen.generator.custom.builder.IBuilder.POSITIVE;
 
 /**
  * A terrain generator that supports infinite(*) worlds
@@ -84,6 +85,8 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     private IBuilder terrainBuilder;
     private final BiomeSource biomeSource;
     private final CustomGeneratorSettings conf;
+    private final MaxSizeHashMap<Long, Chunk> endChunkCache = new MaxSizeHashMap<>(256);
+    private final ChunkGeneratorEnd endChunkGenerator;
 
     //TODO: Implement more structures
     @Nonnull private CubicCaveGenerator caveGenerator = new CubicCaveGenerator();
@@ -100,6 +103,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
 
         this.biomeSource = new BiomeSource(world, conf.createBiomeBlockReplacerConfig(), world.getBiomeProvider(), 2);
         initGenerator(seed);
+        this.endChunkGenerator = new ChunkGeneratorEnd((World) world, true, seed, new BlockPos(0, 16000, 0));
     }
 
     private void initGenerator(long seed) {
@@ -180,6 +184,10 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
             // noticeable issues
             Random rand = new Random(cube.cubeRandomSeed());
 
+            if (cube.getY() >= 1000 && cube.getY() <= 1015) {
+                endChunkGenerator.populate(cube.getX(), cube.getZ());
+            }
+
             ICubicPopulator decorator = biome.getDecorator();
             decorator.generate(world, rand, pos, biome);
             CubeGeneratorsRegistry.generateWorld(world, rand, pos, biome);
@@ -221,15 +229,37 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
             initGenerator(42);
         }
 
+        final IBlockState air = Blocks.AIR.getDefaultState();
+        if (cubeY >= 1000 && cubeY <= 1015) { //Generate End
+            long chunkHash = (((long) cubeX) << 32) | (cubeZ & 0xffffffffL);
+            Chunk chunk = endChunkCache.get(chunkHash);
+            if (chunk == null)  {
+                chunk = endChunkGenerator.generateChunk(cubeX, cubeZ);
+                endChunkCache.put(chunkHash, chunk);
+            }
+            int yOffset = (cubeY - 1000) * 16;
+            ExtendedBlockStorage storage = chunk.getBlockStorageArray()[cubeY - 1000];
+            if (storage != null && !storage.isEmpty()) {
+                for (int x = 0; x < Cube.SIZE; x++) {
+                    for (int y = 0; y < Cube.SIZE; y++) {
+                        for (int z = 0; z < Cube.SIZE; z++) {
+                            IBlockState state = storage.get(x, y, z);
+                            cubePrimer.setBlockState(x, y, z, state);
+                        }
+                    }
+                }
+            }
+        }
         BlockPos start = new BlockPos(cubeX * 4, cubeY * 2, cubeZ * 4);
         BlockPos end = start.add(4, 2, 4);
         terrainBuilder.forEachScaled(start, end, new Vec3i(4, 8, 4),
-                (x, y, z, dx, dy, dz, v) ->
-                        cubePrimer.setBlockState(
-                                blockToLocal(x), blockToLocal(y), blockToLocal(z),
-                                getBlock(x, y, z, dx, dy, dz, v))
+                (x, y, z, dx, dy, dz, v) -> {
+                    IBlockState state = getBlock(x, y, z, dx, dy, dz, v);
+                    if (state != air) {
+                        cubePrimer.setBlockState(blockToLocal(x), blockToLocal(y), blockToLocal(z), state);
+                    }
+                }
         );
-
     }
 
     /**
