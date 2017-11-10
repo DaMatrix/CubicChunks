@@ -32,9 +32,8 @@ import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.Random;
-
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Random;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -50,6 +49,9 @@ public class SurfaceSnowPopulator implements ICubicPopulator {
                     continue;
                 }
                 BlockPos topBlock = aboveTop.down();
+                if (world.getBlockState(topBlock).getBlock() == Blocks.END_STONE)   {
+                    continue;
+                }
 
                 if (world.canBlockFreezeWater(topBlock)) {
                     world.setBlockState(topBlock, Blocks.ICE.getDefaultState(), 2);

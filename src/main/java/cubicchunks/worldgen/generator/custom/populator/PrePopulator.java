@@ -38,9 +38,8 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.feature.WorldGenDungeons;
 import net.minecraft.world.gen.feature.WorldGenLakes;
 
-import java.util.Random;
-
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Random;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -51,10 +50,13 @@ public class PrePopulator implements ICubicPopulator {
 
         Biome biome = cubicBiome.getBiome();
         if (biome != Biomes.DESERT && biome != Biomes.DESERT_HILLS && cfg.waterLakes && random.nextInt(cfg.waterLakeRarity) == 0) {
-            (new WorldGenLakes(Blocks.WATER)).generate((World) world, random, pos.randomPopulationPos(random));
+            BlockPos blockPos = pos.randomPopulationPos(random);
+            if (world.getBlockState(blockPos).getBlock() != Blocks.END_STONE) {
+                (new WorldGenLakes(Blocks.WATER)).generate((World) world, random, blockPos);
+            }
         }
 
-        if (random.nextInt(cfg.lavaLakeRarity) == 0 && cfg.lavaLakes) {
+        LAVA_LAKE: if (random.nextInt(cfg.lavaLakeRarity) == 0 && cfg.lavaLakes) {
             int yOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
             int blockY = pos.getMinBlockY() + yOffset;
             if (random.nextDouble() <= lavaLakeProbability(cfg, blockY)) {
@@ -63,6 +65,9 @@ public class PrePopulator implements ICubicPopulator {
 
                 if (blockY < cfg.waterLevel || random.nextInt(cfg.aboveSeaLavaLakeRarity) == 0) {
                     BlockPos blockPos = pos.getMinBlockPos().add(xOffset, yOffset, zOffset);
+                    if (world.getBlockState(blockPos).getBlock() == Blocks.END_STONE)   {
+                        break LAVA_LAKE;
+                    }
                     (new WorldGenLakes(Blocks.LAVA)).generate((World) world, random, blockPos);
                 }
             }
@@ -70,7 +75,10 @@ public class PrePopulator implements ICubicPopulator {
 
         if (cfg.dungeons) {
             for (int i = 0; i < cfg.dungeonCount; ++i) {
-                (new WorldGenDungeons()).generate((World) world, random, pos.randomPopulationPos(random));
+                BlockPos blockPos = pos.randomPopulationPos(random);
+                if (world.getBlockState(blockPos).getBlock() != Blocks.END_STONE) {
+                    (new WorldGenDungeons()).generate((World) world, random, blockPos);
+                }
             }
         }
 
