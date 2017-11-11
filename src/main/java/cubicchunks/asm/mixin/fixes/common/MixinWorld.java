@@ -56,7 +56,7 @@ public abstract class MixinWorld implements ICubicWorld {
 
     @Shadow @Final public WorldProvider provider;
 
-    public BlockPos addon_forcedSpawn = new BlockPos(0, 64, 0);
+    public BlockPos addon_forcedSpawn = new BlockPos(0, 64, 128);
 
     // note: markAndNotifyBlock has @Nullable on chunk, this will never be null here,
     // because this isgit lo the chunk on which isPopulated is called

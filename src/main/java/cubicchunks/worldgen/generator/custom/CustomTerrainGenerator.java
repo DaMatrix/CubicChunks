@@ -46,9 +46,12 @@ import cubicchunks.worldgen.generator.custom.structure.feature.CubicFeatureGener
 import cubicchunks.worldgen.generator.custom.structure.feature.CubicStrongholdGenerator;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockChorusFlower;
+import net.minecraft.block.BlockEndPortalFrame;
+import net.minecraft.block.BlockStoneBrick;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.monster.EntityShulker;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
@@ -226,7 +229,54 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
             CubeGeneratorsRegistry.generateWorld(world, rand, pos, biome);
 
             strongholds.generateStructure((World) world, rand, pos);
+
+            if (cube.getY() == -64) {
+                if (rand.nextInt(1600) == 1)    {
+                    IBlockState stoneBrick = Blocks.STONEBRICK.getDefaultState(),
+                            stoneBrickMossy = Blocks.STONEBRICK.getDefaultState().withProperty(BlockStoneBrick.VARIANT, BlockStoneBrick.EnumType.MOSSY),
+                            stoneBrickCracked = Blocks.STONEBRICK.getDefaultState().withProperty(BlockStoneBrick.VARIANT, BlockStoneBrick.EnumType.CRACKED);
+                    IBlockState air = Blocks.AIR.getDefaultState();
+                    IBlockState north = Blocks.END_PORTAL_FRAME.getDefaultState().withProperty(BlockEndPortalFrame.FACING, EnumFacing.NORTH);
+                    IBlockState south = Blocks.END_PORTAL_FRAME.getDefaultState().withProperty(BlockEndPortalFrame.FACING, EnumFacing.SOUTH);
+                    IBlockState east = Blocks.END_PORTAL_FRAME.getDefaultState().withProperty(BlockEndPortalFrame.FACING, EnumFacing.EAST);
+                    IBlockState west = Blocks.END_PORTAL_FRAME.getDefaultState().withProperty(BlockEndPortalFrame.FACING, EnumFacing.WEST);
+
+                    BlockPos base = cube.getCoords().getCenterBlockPos();
+
+                    for (int x = base.x; x < base.x + 16; x++)  {
+                        for (int y = base.y; y < base.y + 16; y++)  {
+                            for (int z = base.z; z < base.z + 16; z++)  {
+                                ((World) world).setBlockState(new BlockPos(x, y, z), chooseState(rand, stoneBrick, stoneBrickCracked, stoneBrickMossy));
+                            }
+                        }
+                    }
+                    for (int x = base.x + 1; x < base.x + 15; x++)  {
+                        for (int y = base.y + 1; y < base.y + 15; y++)  {
+                            for (int z = base.z + 1; z < base.z + 15; z++)  {
+                                ((World) world).setBlockState(new BlockPos(x, y, z), air);
+                            }
+                        }
+                    }
+
+                    world.setBlockState(base.add(4, 3, 8), north.withProperty(BlockEndPortalFrame.EYE, false), 2);
+                    world.setBlockState(base.add(5, 3, 8), north.withProperty(BlockEndPortalFrame.EYE, false), 2);
+                    world.setBlockState(base.add(6, 3, 8), north.withProperty(BlockEndPortalFrame.EYE, false), 2);
+                    world.setBlockState(base.add(4, 3, 12), south.withProperty(BlockEndPortalFrame.EYE, false), 2);
+                    world.setBlockState(base.add(5, 3, 12), south.withProperty(BlockEndPortalFrame.EYE, false), 2);
+                    world.setBlockState(base.add(6, 3, 12), south.withProperty(BlockEndPortalFrame.EYE, false), 2);
+                    world.setBlockState(base.add(3, 3, 9), east.withProperty(BlockEndPortalFrame.EYE, false), 2);
+                    world.setBlockState(base.add(3, 3, 10), east.withProperty(BlockEndPortalFrame.EYE, false), 2);
+                    world.setBlockState(base.add(3, 3, 11), east.withProperty(BlockEndPortalFrame.EYE, false), 2);
+                    world.setBlockState(base.add(7, 3, 9), west.withProperty(BlockEndPortalFrame.EYE, false), 2);
+                    world.setBlockState(base.add(7, 3, 10), west.withProperty(BlockEndPortalFrame.EYE, false), 2);
+                    world.setBlockState(base.add(7, 3, 11), west.withProperty(BlockEndPortalFrame.EYE, false), 2);
+                }
+            }
         }
+    }
+
+    private IBlockState chooseState(Random random, IBlockState... states)   {
+        return states[random.nextInt(states.length)];
     }
 
     @Override public Box getPopulationRequirement(Cube cube) {
@@ -343,5 +393,6 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         if (this.conf.strongholds) {
             this.strongholds.generate(world, cube, cubePos);
         }
+
     }
 }
