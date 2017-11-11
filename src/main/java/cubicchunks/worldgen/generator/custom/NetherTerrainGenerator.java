@@ -104,7 +104,9 @@ public class NetherTerrainGenerator extends BasicCubeGenerator {
             }
         }
 
-        quartzGen.generate(vanillaWorld, random, base.add(random.nextInt(16), random.nextInt(16), random.nextInt(16)));
+        for (int i = 0; i < 6; i++) {
+            quartzGen.generate(vanillaWorld, random, base.add(random.nextInt(16), random.nextInt(16), random.nextInt(16)));
+        }
 
         if (cube.getY() < 4) {
             if (random.nextInt(4) == 1) {

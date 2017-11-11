@@ -68,7 +68,7 @@ public abstract class MixinBlockEndPortal {
             } else {
                 spawnPoint = PorkMethods.getSafeSpawnPoint(worldIn,
                         new BlockPos(0, 16040,  0),
-                        15, 128);
+                        15,256, 120);
             }
             entityIn.setPositionAndUpdate(spawnPoint.x + 0.5, spawnPoint.y, spawnPoint.z + 0.5);
         }

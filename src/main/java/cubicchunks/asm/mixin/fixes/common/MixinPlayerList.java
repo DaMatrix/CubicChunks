@@ -110,7 +110,7 @@ public abstract class MixinPlayerList {
         this.setPlayerGameTypeBasedOnOther(entityplayermp, playerIn, worldserver);
 
         if (blockpos == null) {
-            BlockPos blockpos1 = PorkMethods.getSafeSpawnPoint(worldserver, worldserver.getSpawnPoint(), 64, 128);
+            BlockPos blockpos1 = PorkMethods.getSafeSpawnPoint(worldserver, worldserver.getSpawnPoint(), 64, 256, 120);
 
             entityplayermp.setLocationAndAngles((double) ((float) blockpos1.getX() + 0.5F), (double) ((float) blockpos1.getY() + 0.1F), (double) ((float) blockpos1.getZ() + 0.5F), 0.0F, 0.0F);
             entityplayermp.setSpawnPoint(blockpos, flag);

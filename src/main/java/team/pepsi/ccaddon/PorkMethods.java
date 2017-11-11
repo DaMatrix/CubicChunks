@@ -41,21 +41,22 @@ public class PorkMethods {
      * Gets a safe place to spawn in the given radii, centered around the blockpos.
      * Based on a functionally identical method I made for 2p2e
      *
-     * @param world
-     * @param center
-     * @param yRadius
-     * @param horizRadius
+     * @param world The world to check in
+     * @param center The center of the area to check
+     * @param yRadius The radius of blocks to choose random positions in on the Y axis
+     * @param xRadius The radius of blocks to choose random positions in on the X axis
+     * @param zRadius The radius of blocks to choose random positions in on the Z axis
      * @return
      * @author DaPorkchop_
      */
-    public static BlockPos getSafeSpawnPoint(World world, BlockPos center, int yRadius, int horizRadius) {
+    public static BlockPos getSafeSpawnPoint(World world, BlockPos center, int yRadius, int xRadius, int zRadius) {
         BlockPos newPos = new BlockPos(0, 0, 0); //placeholder for saving memory
         IBlockState state;
 
         for (int i = 0; i < 50; i++) {
-            newPos.x = ThreadLocalRandom.current().nextInt(center.x - horizRadius, center.x + horizRadius + 1); //generate coords in range
+            newPos.x = ThreadLocalRandom.current().nextInt(center.x - xRadius, center.x + xRadius + 1); //generate coords in range
             newPos.y = ThreadLocalRandom.current().nextInt(center.y - yRadius, center.y + yRadius + 1);
-            newPos.z = ThreadLocalRandom.current().nextInt(center.z - horizRadius, center.z + horizRadius + 1);
+            newPos.z = ThreadLocalRandom.current().nextInt(center.z - zRadius, center.z + zRadius + 1);
             state = world.getBlockState(newPos);
             FINDAIR:
             if (state.getBlock() != Blocks.AIR) { //scan up for air, find new coordinates if not within 30 blocks
