@@ -43,6 +43,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.gen.ChunkGeneratorHell;
 import net.minecraft.world.gen.feature.WorldGenMinable;
+import team.pepsi.ccaddon.PorkMethods;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -87,12 +88,14 @@ public class NetherTerrainGenerator extends BasicCubeGenerator {
 
     @Override
     public void populate(Cube cube) {
-        netherGen.populate(cube.getX(), cube.getZ());
+        if (PorkMethods.isCubeOutOfBounds(cube.getCoords()))    {
+            return;
+        }
+
         Random random = new Random(cube.getX());
         BlockPos base = cube.getCoords().getCenterBlockPos();
 
         IBlockState lava = Blocks.LAVA.getDefaultState();
-        IBlockState netherrack = Blocks.NETHERRACK.getDefaultState();
         for (int i = 0; i < 8; i++) {
             BlockPos pos = base.add(random.nextInt(16), random.nextInt(16), random.nextInt(16));
             if (world.getBlockState(pos).getBlock() == Blocks.NETHERRACK) {
@@ -190,6 +193,18 @@ public class NetherTerrainGenerator extends BasicCubeGenerator {
      * @param cubeZ      cube z location
      */
     public void generate(final ICubePrimer cubePrimer, int cubeX, int cubeY, int cubeZ) {
+        if (PorkMethods.isCubeOutOfBounds(cubeZ))   {
+            IBlockState barrier = Blocks.BARRIER.getDefaultState();
+            for (int x = 0; x < Cube.SIZE; x++) {
+                for (int y = 0; y < Cube.SIZE; y++) {
+                    for (int z = 0; z < Cube.SIZE; z++) {
+                        cubePrimer.setBlockState(x, y, z, barrier);
+                    }
+                }
+            }
+            return;
+        }
+
         IBlockState netherrack = Blocks.NETHERRACK.getDefaultState();
 
         if (cubeY >= 0 && cubeY <= 7) { //Generate Nether

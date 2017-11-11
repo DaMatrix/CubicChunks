@@ -23,14 +23,6 @@
  */
 package cubicchunks.asm.mixin.core.common;
 
-import static cubicchunks.asm.JvmNames.WORLD_GET_LIGHT_WITH_FLAG;
-import static cubicchunks.asm.JvmNames.WORLD_IS_AREA_LOADED;
-import static cubicchunks.asm.JvmNames.WORLD_IS_BLOCK_LOADED_Z;
-import static cubicchunks.asm.JvmNames.WORLD_IS_CHUNK_LOADED;
-import static cubicchunks.util.Coords.blockToCube;
-import static cubicchunks.util.Coords.cubeToMinBlock;
-
-import cubicchunks.asm.MixinUtils;
 import cubicchunks.world.ICubicWorld;
 import cubicchunks.world.cube.BlankCube;
 import cubicchunks.world.cube.Cube;
@@ -46,21 +38,19 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.Group;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.Slice;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-
-import java.util.Objects;
+import team.pepsi.ccaddon.PorkMethods;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Objects;
+
+import static cubicchunks.asm.JvmNames.*;
+import static cubicchunks.util.Coords.blockToCube;
+import static cubicchunks.util.Coords.cubeToMinBlock;
 
 /**
  * Contains fixes for hardcoded height checks and other height-related issues.
@@ -90,6 +80,10 @@ public abstract class MixinWorld_HeightLimits implements ICubicWorld {
      */
     @Overwrite
     public boolean isOutsideBuildHeight(BlockPos pos) {
+        if (PorkMethods.isCubeOutOfBounds(pos.z >> 4))  {
+            return true;
+        }
+
         return pos.getY() >= getMaxHeight() || pos.getY() < getMinHeight();
     }
 

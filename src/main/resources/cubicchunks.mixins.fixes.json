@@ -27,6 +27,7 @@
         "common.MixinWorldProviderEnd",
         "common.MixinBlockEndPortal",
         "common.MixinPlayerList",
+        "common.MixinWorldBorder",
         "common.isblockloaded.MixinEntity",
         "common.isblockloaded.MixinEntityLivingBase",
         "common.worldgen.tree.MixinWorldGenCanopyTree",

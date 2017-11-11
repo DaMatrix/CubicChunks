@@ -23,9 +23,6 @@
  */
 package cubicchunks.asm.mixin.core.common;
 
-import static cubicchunks.util.Coords.blockToCube;
-import static cubicchunks.util.Coords.blockToLocal;
-
 import cubicchunks.lighting.LightingManager;
 import cubicchunks.util.CubePos;
 import cubicchunks.util.IntRange;
@@ -34,7 +31,6 @@ import cubicchunks.world.ICubicWorld;
 import cubicchunks.world.ICubicWorldSettings;
 import cubicchunks.world.NotCubicChunksWorldException;
 import cubicchunks.world.cube.Cube;
-import cubicchunks.world.provider.ICubicWorldProvider;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -46,37 +42,29 @@ import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.EnumSkyBlock;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
-import net.minecraft.world.WorldType;
+import net.minecraft.world.*;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
 import net.minecraft.world.border.WorldBorder;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.WorldInfo;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Implements;
-import org.spongepowered.asm.mixin.Interface;
-import org.spongepowered.asm.mixin.Intrinsic;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import team.pepsi.ccaddon.PorkMethods;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
 
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
+import static cubicchunks.util.Coords.blockToCube;
+import static cubicchunks.util.Coords.blockToLocal;
 
 /**
  * Contains implementation of {@link ICubicWorld} interface.
@@ -237,6 +225,11 @@ public abstract class MixinWorld implements ICubicWorld {
     
     @Inject(method = "getBlockState", at = @At("HEAD"), cancellable = true)
     public void getBlockState(BlockPos pos, CallbackInfoReturnable<IBlockState> ci) {
+        if (PorkMethods.isCubeOutOfBounds(pos.z >> 4))  {
+            ci.setReturnValue(Blocks.BARRIER.getDefaultState());
+            return;
+        }
+
         if (this.isCubicWorld()) {
             if (this.isValid(pos))
                 ci.setReturnValue(this.getCubeCache().getCube(CubePos.fromBlockCoords(pos)).getBlockState(pos));

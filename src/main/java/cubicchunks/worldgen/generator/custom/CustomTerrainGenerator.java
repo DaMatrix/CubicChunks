@@ -23,7 +23,6 @@
  */
 package cubicchunks.worldgen.generator.custom;
 
-import cubicchunks.CubicChunks;
 import cubicchunks.api.worldgen.biome.CubicBiome;
 import cubicchunks.api.worldgen.populator.CubePopulatorEvent;
 import cubicchunks.api.worldgen.populator.ICubicPopulator;
@@ -57,8 +56,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.gen.ChunkGeneratorEnd;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import org.lwjgl.input.Keyboard;
+import team.pepsi.ccaddon.PorkMethods;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -170,10 +168,10 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     }
 
     @Override public void populate(Cube cube) {
-        /**
-         * If event is not canceled we will use default biome decorators and
-         * cube populators from registry.
-         **/
+        if (PorkMethods.isCubeOutOfBounds(cube.getCoords()))    {
+            return;
+        }
+
         if (!MinecraftForge.EVENT_BUS.post(new CubePopulatorEvent(world, cube))) {
             CubicBiome biome = CubicBiome.getCubic(cube.getCubicWorld().getBiome(Coords.getCubeCenter(cube)));
 
@@ -257,11 +255,16 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
      * @param cubeZ cube z location
      */
     public void generate(final ICubePrimer cubePrimer, int cubeX, int cubeY, int cubeZ) {
-        // when debugging is enabled, allow reloading generator settings after pressing L
-        // no need to restart after applying changes.
-        // Seed it changed to some constant because world isn't easily accessible here
-        if (CubicChunks.DEBUG_ENABLED && FMLCommonHandler.instance().getSide().isClient() && Keyboard.isKeyDown(Keyboard.KEY_L)) {
-            initGenerator(42);
+        if (PorkMethods.isCubeOutOfBounds(cubeZ))   {
+            IBlockState barrier = Blocks.BARRIER.getDefaultState();
+            for (int x = 0; x < Cube.SIZE; x++) {
+                for (int y = 0; y < Cube.SIZE; y++) {
+                    for (int z = 0; z < Cube.SIZE; z++) {
+                        cubePrimer.setBlockState(x, y, z, barrier);
+                    }
+                }
+            }
+            return;
         }
 
         final IBlockState air = Blocks.AIR.getDefaultState();

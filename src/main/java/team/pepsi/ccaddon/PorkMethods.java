@@ -23,6 +23,7 @@
  */
 package team.pepsi.ccaddon;
 
+import cubicchunks.util.CubePos;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -84,5 +85,13 @@ public class PorkMethods {
         }
 
         return center;
+    }
+
+    public static boolean isCubeOutOfBounds(CubePos pos)    {
+        return isCubeOutOfBounds(pos.getZ());
+    }
+
+    public static boolean isCubeOutOfBounds(int posZ)   {
+        return posZ < 0 || posZ > 15;
     }
 }

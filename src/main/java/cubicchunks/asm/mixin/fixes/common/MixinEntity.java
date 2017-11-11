@@ -37,6 +37,9 @@ import net.minecraft.world.WorldServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
 
@@ -75,6 +78,8 @@ public abstract class MixinEntity {
 
     @Shadow
     public abstract void readFromNBT(NBTTagCompound compound);
+
+    @Shadow public abstract void setPosition(double x, double y, double z);
 
     /**
      * ree
@@ -161,6 +166,15 @@ public abstract class MixinEntity {
             return entity;
         } else {
             return null;
+        }
+    }
+
+    @Inject(method = "Lnet/minecraft/entity/Entity;onEntityUpdate()V", at = @At("RETURN"))
+    public void postEntityUpdate(CallbackInfo callbackInfo) {
+        if (this.posZ < 0)    {
+            this.setPosition(this.posX, this.posY, 0);
+        } else if (this.posZ > 255) {
+            this.setPosition(this.posX, this.posY, 255);
         }
     }
 }
