@@ -72,6 +72,8 @@ public abstract class MixinWorld_HeightLimits implements ICubicWorld {
 
     @Shadow protected abstract boolean isChunkLoaded(int x, int z, boolean allowEmpty);
 
+    @Shadow @Final public boolean isRemote;
+
     /**
      * This @Overwrite allows World to "see" blocks outside of 0..255 height range.
      *
@@ -80,7 +82,7 @@ public abstract class MixinWorld_HeightLimits implements ICubicWorld {
      */
     @Overwrite
     public boolean isOutsideBuildHeight(BlockPos pos) {
-        if (PorkMethods.isCubeOutOfBounds(pos.z >> 4))  {
+        if (!isRemote && PorkMethods.isCubeOutOfBounds(pos.z >> 4))  {
             return true;
         }
 

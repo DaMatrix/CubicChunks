@@ -30,6 +30,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import team.pepsi.ccaddon.PorkMethods;
 
 @Mixin(DedicatedPlayerList.class)
 public class MixinDedicatedPlayerList extends MixinPlayerList {
@@ -37,6 +38,6 @@ public class MixinDedicatedPlayerList extends MixinPlayerList {
     @Inject(method = "<init>", at = @At(value = "RETURN"))
     public void setVerticalViewDistance(DedicatedServer server, CallbackInfo cbi) {
         this.setVerticalViewDistance(server.getIntProperty("vertical-view-distance", -1));
-
+        PorkMethods.isDedicatedServer = true; //Sets the world border, putting this here to make sure the world border is changed on the dedotated server
     }
 }

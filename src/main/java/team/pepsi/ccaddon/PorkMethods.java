@@ -37,6 +37,8 @@ import java.util.concurrent.ThreadLocalRandom;
  * @author DaPorkchop_
  */
 public class PorkMethods {
+    public static boolean isDedicatedServer = false;
+
     /**
      * Gets a safe place to spawn in the given radii, centered around the blockpos.
      * Based on a functionally identical method I made for 2p2e
