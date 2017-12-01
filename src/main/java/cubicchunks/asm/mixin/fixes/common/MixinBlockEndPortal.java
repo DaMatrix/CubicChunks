@@ -28,9 +28,11 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.play.server.SPacketChangeGameState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import team.pepsi.ccaddon.PorkMethods;
@@ -58,13 +60,27 @@ public abstract class MixinBlockEndPortal {
             CHECK: if (entityIn.posY > 16000)  {
                 if (entityIn instanceof EntityPlayer)   {
                     EntityPlayer player = (EntityPlayer) entityIn;
-                    if (player.isSpawnForced())  {
                         spawnPoint = player.getBedLocation();
-                        break CHECK;
-                    }
+                        if (spawnPoint != null)
+                        {
+                            BlockPos blockpos1 = EntityPlayer.getBedSpawnLocation(FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(player.dimension), spawnPoint, player.isSpawnForced());
+
+                            if (blockpos1 != null)
+                            {
+                                spawnPoint = blockpos1;
+                                break CHECK;
+                            }
+                            else
+                            {
+                                ((EntityPlayerMP) player).connection.sendPacket(new SPacketChangeGameState(0, 0.0F));
+                            }
+                        }
+
                 }
 
-                spawnPoint = worldIn.getSpawnPoint();
+                spawnPoint = PorkMethods.getSafeSpawnPoint(worldIn,
+                        new BlockPos(0, 120,  0),
+                        15,256, 120);
             } else {
                 spawnPoint = PorkMethods.getSafeSpawnPoint(worldIn,
                         new BlockPos(0, 16040,  0),

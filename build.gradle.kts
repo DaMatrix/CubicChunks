@@ -205,6 +205,9 @@ repositories {
     maven {
         setUrl("http://repo.spongepowered.org/maven")
     }
+    maven {
+        setUrl("https://mod-buildcraft.com/maven/")
+    }
 }
 
 dependencies {
@@ -218,6 +221,7 @@ dependencies {
     val deobfCompile by configurations
 
     compile("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
+    compile("com.mod-buildcraft:buildcraft-api:7.99.12")
     testCompile("junit:junit:4.11")
     testCompile("org.hamcrest:hamcrest-junit:2.0.0.0")
     testCompile("it.ozimov:java7-hamcrest-matchers:0.7.0")

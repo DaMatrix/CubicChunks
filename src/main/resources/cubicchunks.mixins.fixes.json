@@ -28,6 +28,8 @@
         "common.MixinBlockEndPortal",
         "common.MixinPlayerList",
         "common.MixinWorldBorder",
+        "common.MixinWorldEntitySpawner",
+        "common.MixinBlockBed",
         "common.isblockloaded.MixinEntity",
         "common.isblockloaded.MixinEntityLivingBase",
         "common.worldgen.tree.MixinWorldGenCanopyTree",

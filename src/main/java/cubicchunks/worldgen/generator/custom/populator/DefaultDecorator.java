@@ -23,19 +23,16 @@
  */
 package cubicchunks.worldgen.generator.custom.populator;
 
-import static cubicchunks.worldgen.generator.custom.populator.PopulatorUtils.genOreBellCurve;
-import static cubicchunks.worldgen.generator.custom.populator.PopulatorUtils.genOreUniform;
-import static cubicchunks.worldgen.generator.custom.populator.PopulatorUtils.getSurfaceForCube;
-
+import buildcraft.api.enums.EnumSpring;
 import cubicchunks.api.worldgen.biome.CubicBiome;
 import cubicchunks.api.worldgen.populator.ICubicPopulator;
 import cubicchunks.util.CubePos;
-import cubicchunks.util.MathUtil;
 import cubicchunks.world.ICubicWorld;
 import cubicchunks.world.cube.Cube;
 import cubicchunks.worldgen.generator.custom.CustomGeneratorSettings;
 import cubicchunks.worldgen.generator.custom.populator.PopulatorUtils.SurfaceType;
 import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockFlower;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.material.Material;
@@ -44,16 +41,15 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeDecorator;
-import net.minecraft.world.gen.feature.WorldGenAbstractTree;
-import net.minecraft.world.gen.feature.WorldGenDeadBush;
-import net.minecraft.world.gen.feature.WorldGenLiquids;
-import net.minecraft.world.gen.feature.WorldGenMinable;
-import net.minecraft.world.gen.feature.WorldGenPumpkin;
-import net.minecraft.world.gen.feature.WorldGenerator;
-
-import java.util.Random;
+import net.minecraft.world.gen.feature.*;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.LinkedHashSet;
+import java.util.Random;
+import java.util.Set;
+
+import static cubicchunks.worldgen.generator.custom.populator.PopulatorUtils.genOreUniform;
+import static cubicchunks.worldgen.generator.custom.populator.PopulatorUtils.getSurfaceForCube;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -61,52 +57,120 @@ public final class DefaultDecorator implements ICubicPopulator {
 
     public static class Ores implements ICubicPopulator {
 
+        public Set<EnhancedMineable> minables = new LinkedHashSet<>();
+
         @Override public void generate(ICubicWorld world, Random random, CubePos pos, CubicBiome biome) {
             CustomGeneratorSettings cfg = CustomGeneratorSettings.fromJson(world.getWorldInfo().getGeneratorOptions());
             generateOres(world, cfg, random, pos);
         }
 
         private void generateOres(ICubicWorld world, CustomGeneratorSettings cfg, Random random, CubePos pos) {
-            IBlockState diorite = Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.DIORITE);
-            IBlockState granite = Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.GRANITE);
-            IBlockState andesite = Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.ANDESITE);
+            if (minables.size() == 0)   {
+                IBlockState diorite = Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.DIORITE);
+                IBlockState granite = Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.GRANITE);
+                IBlockState andesite = Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.ANDESITE);
+
+                minables.add(new EnhancedMineable(cfg.dirtSpawnTries, cfg.dirtSpawnProbability,
+                        new WorldGenMinable(Blocks.DIRT.getDefaultState(), cfg.dirtSpawnSize),
+                        cfg.dirtSpawnMinHeight, cfg.dirtSpawnMaxHeight));
+                minables.add(new EnhancedMineable(cfg.gravelSpawnTries, cfg.gravelSpawnProbability,
+                        new WorldGenMinable(Blocks.GRAVEL.getDefaultState(), cfg.gravelSpawnSize),
+                        cfg.gravelSpawnMinHeight, cfg.gravelSpawnMaxHeight));
+                minables.add(new EnhancedMineable(cfg.dioriteSpawnTries, cfg.dioriteSpawnProbability,
+                        new WorldGenMinable(diorite, cfg.dioriteSpawnSize),
+                        cfg.dioriteSpawnMinHeight, cfg.dioriteSpawnMaxHeight));
+                minables.add(new EnhancedMineable(cfg.graniteSpawnTries, cfg.graniteSpawnProbability,
+                        new WorldGenMinable(granite, cfg.graniteSpawnSize),
+                        cfg.graniteSpawnMinHeight, cfg.graniteSpawnMaxHeight));
+                minables.add(new EnhancedMineable(cfg.andesiteSpawnTries, cfg.andesiteSpawnProbability,
+                        new WorldGenMinable(andesite, cfg.andesiteSpawnSize),
+                        cfg.andesiteSpawnMinHeight, cfg.andesiteSpawnMaxHeight));
+                minables.add(new EnhancedMineable(cfg.coalOreSpawnTries, cfg.coalOreSpawnProbability,
+                        new WorldGenMinable(Blocks.COAL_ORE.getDefaultState(), cfg.coalOreSpawnSize),
+                        cfg.coalOreSpawnMinHeight, cfg.coalOreSpawnMaxHeight));
+                minables.add(new EnhancedMineable(cfg.ironOreSpawnTries, cfg.ironOreSpawnProbability,
+                        new WorldGenMinable(Blocks.IRON_ORE.getDefaultState(), cfg.ironOreSpawnSize),
+                        cfg.ironOreSpawnMinHeight, cfg.ironOreSpawnMaxHeight));
+                minables.add(new EnhancedMineable(cfg.goldOreSpawnTries, cfg.goldOreSpawnProbability,
+                        new WorldGenMinable(Blocks.GOLD_ORE.getDefaultState(), cfg.goldOreSpawnSize),
+                        cfg.goldOreSpawnMinHeight, cfg.goldOreSpawnMaxHeight));
+                minables.add(new EnhancedMineable(cfg.redstoneOreSpawnTries, cfg.redstoneOreSpawnProbability,
+                        new WorldGenMinable(Blocks.REDSTONE_ORE.getDefaultState(), cfg.redstoneOreSpawnSize),
+                        cfg.redstoneOreSpawnMinHeight, cfg.redstoneOreSpawnMaxHeight));
+                minables.add(new EnhancedMineable(cfg.diamondOreSpawnTries, cfg.diamondOreSpawnProbability,
+                        new WorldGenMinable(Blocks.DIAMOND_ORE.getDefaultState(), cfg.diamondOreSpawnSize),
+                        cfg.diamondOreSpawnMinHeight, cfg.diamondOreSpawnMaxHeight));
+                minables.add(new EnhancedMineable(cfg.lapisLazuliSpawnTries, cfg.lapisLazuliSpawnProbability,
+                        new WorldGenMinable(Blocks.LAPIS_ORE.getDefaultState(), cfg.lapisLazuliSpawnSize),
+                        cfg.lapisLazuliSpawnMinHeight, cfg.lapisLazuliSpawnMaxHeight));
+
+
+                // sorry about this horrific code, but there's no other way to do it without adding mods to the build.gradle
+                //FORESTRY ORES
+                //Apatite
+                minables.add(new EnhancedMineable(1, 0.5f,
+                        new WorldGenMinable(Block.getBlockFromName("forestry:resources").getStateFromMeta(0), 36),
+                        Float.MIN_VALUE, Float.MAX_VALUE));
+                //Copper
+                minables.add(new EnhancedMineable(3, 1f,
+                        new WorldGenMinable(Block.getBlockFromName("forestry:resources").getStateFromMeta(1), 6),
+                        Float.MIN_VALUE, Float.MAX_VALUE));
+                //Tin
+                minables.add(new EnhancedMineable(4, 1f,
+                        new WorldGenMinable(Block.getBlockFromName("forestry:resources").getStateFromMeta(2), 6),
+                        Float.MIN_VALUE, Float.MAX_VALUE));
+
+                //THERMAL EXPANSION ORES
+                minables.add(new EnhancedMineable(4, 1f,
+                        new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(0), 8),
+                        Float.MIN_VALUE, Float.MAX_VALUE));
+                minables.add(new EnhancedMineable(4, 1f,
+                        new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(1), 8),
+                        Float.MIN_VALUE, Float.MAX_VALUE));
+                minables.add(new EnhancedMineable(4, 1f,
+                        new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(3), 7),
+                        Float.MIN_VALUE, Float.MAX_VALUE));
+                minables.add(new EnhancedMineable(3, 1f,
+                        new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(2), 8),
+                        Float.MIN_VALUE, Float.MAX_VALUE));
+                minables.add(new EnhancedMineable(2, 1f,
+                        new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(0), 5),
+                        Float.MIN_VALUE, Float.MAX_VALUE));
+                minables.add(new EnhancedMineable(1, 0.5f,
+                        new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore_fluid").getDefaultState(), 15),
+                        Float.MIN_VALUE, Float.MAX_VALUE));
+
+                //BUILDCRAFT OIL
+                minables.add(new EnhancedMineable(1, 0.005f,
+                        new WorldGenMinable(EnumSpring.OIL.liquidBlock, 170),
+                        Float.MIN_VALUE, 0));
+            }
+
+            for (EnhancedMineable mineable : minables)  {
+                genOreUniform(world, cfg, random, pos, mineable.spawnTries, mineable.probability,
+                        mineable.minable,
+                        mineable.minY, mineable.maxY);
+            }
 
             // TODO: events?
-            genOreUniform(world, cfg, random, pos, cfg.dirtSpawnTries, cfg.dirtSpawnProbability,
-                    new WorldGenMinable(Blocks.DIRT.getDefaultState(), cfg.dirtSpawnSize),
-                    cfg.dirtSpawnMinHeight, cfg.dirtSpawnMaxHeight);
-            genOreUniform(world, cfg, random, pos, cfg.gravelSpawnTries, cfg.gravelSpawnProbability,
-                    new WorldGenMinable(Blocks.GRAVEL.getDefaultState(), cfg.gravelSpawnSize),
-                    cfg.gravelSpawnMinHeight, cfg.gravelSpawnMaxHeight);
-            genOreUniform(world, cfg, random, pos, cfg.dioriteSpawnTries, cfg.dioriteSpawnProbability,
-                    new WorldGenMinable(diorite, cfg.dioriteSpawnSize),
-                    cfg.dioriteSpawnMinHeight, cfg.dioriteSpawnMaxHeight);
-            genOreUniform(world, cfg, random, pos, cfg.graniteSpawnTries, cfg.graniteSpawnProbability,
-                    new WorldGenMinable(granite, cfg.graniteSpawnSize),
-                    cfg.graniteSpawnMinHeight, cfg.graniteSpawnMaxHeight);
-            genOreUniform(world, cfg, random, pos, cfg.andesiteSpawnTries, cfg.andesiteSpawnProbability,
-                    new WorldGenMinable(andesite, cfg.andesiteSpawnSize),
-                    cfg.andesiteSpawnMinHeight, cfg.andesiteSpawnMaxHeight);
 
-            genOreUniform(world, cfg, random, pos, cfg.coalOreSpawnTries, cfg.coalOreSpawnProbability,
-                    new WorldGenMinable(Blocks.COAL_ORE.getDefaultState(), cfg.coalOreSpawnSize),
-                    cfg.coalOreSpawnMinHeight, cfg.coalOreSpawnMaxHeight);
-            genOreUniform(world, cfg, random, pos, cfg.ironOreSpawnTries, cfg.ironOreSpawnProbability,
-                    new WorldGenMinable(Blocks.IRON_ORE.getDefaultState(), cfg.ironOreSpawnSize),
-                    cfg.ironOreSpawnMinHeight, cfg.ironOreSpawnMaxHeight);
-            genOreUniform(world, cfg, random, pos, cfg.goldOreSpawnTries, cfg.goldOreSpawnProbability,
-                    new WorldGenMinable(Blocks.GOLD_ORE.getDefaultState(), cfg.goldOreSpawnSize),
-                    cfg.goldOreSpawnMinHeight, cfg.goldOreSpawnMaxHeight);
-            genOreUniform(world, cfg, random, pos, cfg.redstoneOreSpawnTries, cfg.redstoneOreSpawnProbability,
-                    new WorldGenMinable(Blocks.REDSTONE_ORE.getDefaultState(), cfg.redstoneOreSpawnSize),
-                    cfg.redstoneOreSpawnMinHeight, cfg.redstoneOreSpawnMaxHeight);
-            genOreUniform(world, cfg, random, pos, cfg.diamondOreSpawnTries, cfg.diamondOreSpawnProbability,
-                    new WorldGenMinable(Blocks.DIAMOND_ORE.getDefaultState(), cfg.diamondOreSpawnSize),
-                    cfg.diamondOreSpawnMinHeight, cfg.diamondOreSpawnMaxHeight);
+            //Block.getBlockFromName("forestry:resource").getStateFromMeta(2);
+        }
 
-            genOreBellCurve(world, cfg, random, pos, cfg.lapisLazuliSpawnTries, cfg.lapisLazuliSpawnProbability,
-                    new WorldGenMinable(Blocks.LAPIS_ORE.getDefaultState(), cfg.lapisLazuliSpawnSize),
-                    cfg.lapisLazuliHeightMean, cfg.lapisLazuliHeightStdDeviation, cfg.lapisLazuliHeightSpacing, cfg.lapisLazuliSpawnMinHeight, cfg.lapisLazuliSpawnMaxHeight);
+        static class EnhancedMineable   {
+            WorldGenMinable minable;
+            int spawnTries;
+            float probability;
+            float minY;
+            float maxY;
+
+            public EnhancedMineable(int b, float c, WorldGenMinable a, float d, float e)    {
+                minable = a;
+                spawnTries = b;
+                probability = c;
+                minY = d;
+                maxY = e;
+            }
         }
     }
 
