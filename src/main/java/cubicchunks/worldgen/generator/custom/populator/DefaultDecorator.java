@@ -42,6 +42,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.gen.feature.*;
+import net.minecraftforge.fml.common.FMLLog;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.LinkedHashSet;
@@ -105,45 +106,50 @@ public final class DefaultDecorator implements ICubicPopulator {
                         cfg.lapisLazuliSpawnMinHeight, cfg.lapisLazuliSpawnMaxHeight));
 
 
-                // sorry about this horrific code, but there's no other way to do it without adding mods to the build.gradle
-                //FORESTRY ORES
-                //Apatite
-                minables.add(new EnhancedMineable(1, 0.5f,
-                        new WorldGenMinable(Block.getBlockFromName("forestry:resources").getStateFromMeta(0), 36),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
-                //Copper
-                minables.add(new EnhancedMineable(3, 1f,
-                        new WorldGenMinable(Block.getBlockFromName("forestry:resources").getStateFromMeta(1), 6),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
-                //Tin
-                minables.add(new EnhancedMineable(4, 1f,
-                        new WorldGenMinable(Block.getBlockFromName("forestry:resources").getStateFromMeta(2), 6),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
+                try {
+                    // sorry about this horrific code, but there's no other way to do it without adding mods to the build.gradle
+                    //FORESTRY ORES
+                    //Apatite
+                    minables.add(new EnhancedMineable(1, 0.5f,
+                            new WorldGenMinable(Block.getBlockFromName("forestry:resources").getStateFromMeta(0), 36),
+                            Float.MIN_VALUE, Float.MAX_VALUE));
+                    //Copper
+                    minables.add(new EnhancedMineable(3, 1f,
+                            new WorldGenMinable(Block.getBlockFromName("forestry:resources").getStateFromMeta(1), 6),
+                            Float.MIN_VALUE, Float.MAX_VALUE));
+                    //Tin
+                    minables.add(new EnhancedMineable(4, 1f,
+                            new WorldGenMinable(Block.getBlockFromName("forestry:resources").getStateFromMeta(2), 6),
+                            Float.MIN_VALUE, Float.MAX_VALUE));
 
-                //THERMAL EXPANSION ORES
-                minables.add(new EnhancedMineable(4, 1f,
-                        new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(0), 8),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
-                minables.add(new EnhancedMineable(4, 1f,
-                        new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(1), 8),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
-                minables.add(new EnhancedMineable(4, 1f,
-                        new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(3), 7),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
-                minables.add(new EnhancedMineable(3, 1f,
-                        new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(2), 8),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
-                minables.add(new EnhancedMineable(2, 1f,
-                        new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(0), 5),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
-                minables.add(new EnhancedMineable(1, 0.5f,
-                        new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore_fluid").getDefaultState(), 15),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
+                    //THERMAL EXPANSION ORES
+                    minables.add(new EnhancedMineable(4, 1f,
+                            new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(0), 8),
+                            Float.MIN_VALUE, Float.MAX_VALUE));
+                    minables.add(new EnhancedMineable(4, 1f,
+                            new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(1), 8),
+                            Float.MIN_VALUE, Float.MAX_VALUE));
+                    minables.add(new EnhancedMineable(4, 1f,
+                            new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(3), 7),
+                            Float.MIN_VALUE, Float.MAX_VALUE));
+                    minables.add(new EnhancedMineable(3, 1f,
+                            new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(2), 8),
+                            Float.MIN_VALUE, Float.MAX_VALUE));
+                    minables.add(new EnhancedMineable(2, 1f,
+                            new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(0), 5),
+                            Float.MIN_VALUE, Float.MAX_VALUE));
+                    minables.add(new EnhancedMineable(1, 0.5f,
+                            new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore_fluid").getDefaultState(), 15),
+                            Float.MIN_VALUE, Float.MAX_VALUE));
 
-                //BUILDCRAFT OIL
-                minables.add(new EnhancedMineable(1, 0.005f,
-                        new WorldGenMinable(EnumSpring.OIL.liquidBlock, 170),
-                        Float.MIN_VALUE, 0));
+                    //BUILDCRAFT OIL
+                    minables.add(new EnhancedMineable(1, 0.005f,
+                            new WorldGenMinable(EnumSpring.OIL.liquidBlock, 170),
+                            Float.MIN_VALUE, 0));
+                } catch (NullPointerException e)    {
+                    FMLLog.info("Unable to locate modded ores");
+                    //e.printStackTrace();
+                }
             }
 
             for (EnhancedMineable mineable : minables)  {
