@@ -231,7 +231,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
             strongholds.generateStructure((World) world, rand, pos);
 
             if (cube.getY() == -64) {
-                if (rand.nextInt(1600) == 1)    {
+                if (rand.nextInt(1600) != -1)    {
                     IBlockState stoneBrick = Blocks.STONEBRICK.getDefaultState(),
                             stoneBrickMossy = Blocks.STONEBRICK.getDefaultState().withProperty(BlockStoneBrick.VARIANT, BlockStoneBrick.EnumType.MOSSY),
                             stoneBrickCracked = Blocks.STONEBRICK.getDefaultState().withProperty(BlockStoneBrick.VARIANT, BlockStoneBrick.EnumType.CRACKED);
