@@ -42,7 +42,9 @@ import cubicchunks.worldgen.generator.CubePrimer;
 import cubicchunks.worldgen.generator.ICubePrimer;
 import cubicchunks.worldgen.generator.custom.biome.replacer.IBiomeBlockReplacer;
 import cubicchunks.worldgen.generator.custom.builder.BiomeSource;
+import cubicchunks.worldgen.generator.custom.builder.IBuilder;
 import cubicchunks.worldgen.generator.custom.builder.NoiseConsumer;
+import cubicchunks.worldgen.generator.custom.builder.NoiseSource;
 import cubicchunks.worldgen.generator.custom.structure.CubicCaveGenerator;
 import cubicchunks.worldgen.generator.custom.structure.CubicRavineGenerator;
 import cubicchunks.worldgen.generator.custom.structure.CubicStructureGenerator;
@@ -92,6 +94,9 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                     return (int) (groundNoise.getValue(x, y, 0) * 256);
                 }
             });
+    private IBuilder islandNoiseX;
+    private IBuilder islandNoiseY;
+    private IBuilder islandNoiseZ;
     private Chunk endChunkCache = null;
     //TODO: Implement more structures
     @Nonnull
@@ -116,12 +121,32 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     }
 
     private void initGenerator(long seed) {
-        Perlin groundNoise = new Perlin();
+        groundNoise = new Perlin();
         groundNoise.setNoiseQuality(NoiseQuality.STANDARD);
         groundNoise.setOctaveCount(6);
         groundNoise.setFrequency(0.006);
         groundNoise.setSeed((int) (seed / (Math.pow(2, 32))));
-        this.groundNoise = groundNoise;
+
+        islandNoiseX = NoiseSource.perlin()
+                .seed(seed)
+                .frequency(0.2)
+                .octaves(6)
+                .normalizeTo(-1, 1)
+                .create();
+
+        islandNoiseY = NoiseSource.perlin()
+                .seed(seed / 2)
+                .frequency(0.2)
+                .octaves(6)
+                .normalizeTo(-1, 1)
+                .create();
+
+        islandNoiseZ = NoiseSource.perlin()
+                .seed(seed / 4)
+                .frequency(0.2)
+                .octaves(6)
+                .normalizeTo(-1, 1)
+                .create();
     }
 
     @Override
@@ -236,7 +261,17 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
 
     public double get(int x, int y, int z) {
         double groundNoise = groundNoiseCache.getUnchecked((((long) x) << 32) | (z & 0xffffffffL));
-        return MathHelper.clamp((groundNoise - y) / 255, -1, 1);
+        groundNoise = MathHelper.clamp((groundNoise - y) / 255, -1, 1);
+        double islandX = islandNoiseX.get(x, 0, 0),
+                islandY = islandNoiseY.get(y, 0, 0),
+                islandZ = islandNoiseZ.get(z, 0, 0); //this should be generating floating islands, and it does, but they're rectangular
+
+        boolean shouldIsland = islandX > 0 && islandY > 0 && islandZ > 0;
+        if (shouldIsland)   {
+            groundNoise = (islandX + islandY + islandZ) / 3;
+        }
+
+        return groundNoise;
     }
 
     private void generateStructures(ICubePrimer cube, CubePos cubePos) {
