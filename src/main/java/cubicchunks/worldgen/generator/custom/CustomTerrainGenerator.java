@@ -129,21 +129,21 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
 
         islandNoiseX = NoiseSource.perlin()
                 .seed(seed)
-                .frequency(0.2)
+                .frequency(0.012)
                 .octaves(6)
                 .normalizeTo(-1, 1)
                 .create();
 
         islandNoiseY = NoiseSource.perlin()
                 .seed(seed / 2)
-                .frequency(0.2)
+                .frequency(0.05)
                 .octaves(6)
                 .normalizeTo(-1, 1)
                 .create();
 
         islandNoiseZ = NoiseSource.perlin()
                 .seed(seed / 4)
-                .frequency(0.2)
+                .frequency(0.012)
                 .octaves(6)
                 .normalizeTo(-1, 1)
                 .create();
@@ -262,9 +262,9 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     public double get(int x, int y, int z) {
         double groundNoise = groundNoiseCache.getUnchecked((((long) x) << 32) | (z & 0xffffffffL));
         groundNoise = MathHelper.clamp((groundNoise - y) / 255, -1, 1);
-        double islandX = islandNoiseX.get(x, 0, 0),
-                islandY = islandNoiseY.get(y, 0, 0),
-                islandZ = islandNoiseZ.get(z, 0, 0); //this should be generating floating islands, and it does, but they're rectangular
+        double islandX = islandNoiseX.get(x, y, z),
+                islandY = islandNoiseY.get(x, y, z),
+                islandZ = islandNoiseZ.get(x, y, z); //this should be generating floating islands, and it does, but they're rectangular
 
         boolean shouldIsland = islandX > 0 && islandY > 0 && islandZ > 0;
         if (shouldIsland)   {
