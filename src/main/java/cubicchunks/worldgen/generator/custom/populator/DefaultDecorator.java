@@ -73,38 +73,37 @@ public final class DefaultDecorator implements ICubicPopulator {
 
                 minables.add(new EnhancedMineable(cfg.dirtSpawnTries, cfg.dirtSpawnProbability,
                         new WorldGenMinable(Blocks.DIRT.getDefaultState(), cfg.dirtSpawnSize),
-                        cfg.dirtSpawnMinHeight, cfg.dirtSpawnMaxHeight));
+                        Float.MIN_VALUE, Float.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.gravelSpawnTries, cfg.gravelSpawnProbability,
                         new WorldGenMinable(Blocks.GRAVEL.getDefaultState(), cfg.gravelSpawnSize),
-                        cfg.gravelSpawnMinHeight, cfg.gravelSpawnMaxHeight));
+                        Float.MIN_VALUE, Float.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.dioriteSpawnTries, cfg.dioriteSpawnProbability,
                         new WorldGenMinable(diorite, cfg.dioriteSpawnSize),
-                        cfg.dioriteSpawnMinHeight, cfg.dioriteSpawnMaxHeight));
+                        Float.MIN_VALUE, Float.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.graniteSpawnTries, cfg.graniteSpawnProbability,
                         new WorldGenMinable(granite, cfg.graniteSpawnSize),
-                        cfg.graniteSpawnMinHeight, cfg.graniteSpawnMaxHeight));
+                        Float.MIN_VALUE, Float.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.andesiteSpawnTries, cfg.andesiteSpawnProbability,
                         new WorldGenMinable(andesite, cfg.andesiteSpawnSize),
-                        cfg.andesiteSpawnMinHeight, cfg.andesiteSpawnMaxHeight));
+                        Float.MIN_VALUE, Float.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.coalOreSpawnTries, cfg.coalOreSpawnProbability,
                         new WorldGenMinable(Blocks.COAL_ORE.getDefaultState(), cfg.coalOreSpawnSize),
-                        cfg.coalOreSpawnMinHeight, cfg.coalOreSpawnMaxHeight));
+                        Float.MIN_VALUE, Float.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.ironOreSpawnTries, cfg.ironOreSpawnProbability,
                         new WorldGenMinable(Blocks.IRON_ORE.getDefaultState(), cfg.ironOreSpawnSize),
-                        cfg.ironOreSpawnMinHeight, cfg.ironOreSpawnMaxHeight));
+                        Float.MIN_VALUE, Float.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.goldOreSpawnTries, cfg.goldOreSpawnProbability,
                         new WorldGenMinable(Blocks.GOLD_ORE.getDefaultState(), cfg.goldOreSpawnSize),
-                        cfg.goldOreSpawnMinHeight, cfg.goldOreSpawnMaxHeight));
+                        Float.MIN_VALUE, Float.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.redstoneOreSpawnTries, cfg.redstoneOreSpawnProbability,
                         new WorldGenMinable(Blocks.REDSTONE_ORE.getDefaultState(), cfg.redstoneOreSpawnSize),
-                        cfg.redstoneOreSpawnMinHeight, cfg.redstoneOreSpawnMaxHeight));
+                        Float.MIN_VALUE, Float.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.diamondOreSpawnTries, cfg.diamondOreSpawnProbability,
                         new WorldGenMinable(Blocks.DIAMOND_ORE.getDefaultState(), cfg.diamondOreSpawnSize),
-                        cfg.diamondOreSpawnMinHeight, cfg.diamondOreSpawnMaxHeight));
+                        Float.MIN_VALUE, Float.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.lapisLazuliSpawnTries, cfg.lapisLazuliSpawnProbability,
                         new WorldGenMinable(Blocks.LAPIS_ORE.getDefaultState(), cfg.lapisLazuliSpawnSize),
-                        cfg.lapisLazuliSpawnMinHeight, cfg.lapisLazuliSpawnMaxHeight));
-
+                        Float.MIN_VALUE, Float.MAX_VALUE));
 
                 try {
                     // sorry about this horrific code, but there's no other way to do it without adding mods to the build.gradle
