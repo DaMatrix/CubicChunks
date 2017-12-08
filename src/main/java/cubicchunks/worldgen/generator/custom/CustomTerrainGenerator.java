@@ -63,7 +63,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.gen.ChunkGeneratorEnd;
 import net.minecraftforge.common.MinecraftForge;
-import org.lwjgl.input.Keyboard;
 import team.pepsi.ccaddon.PorkMethods;
 
 import javax.annotation.Nonnull;
@@ -177,14 +176,6 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         return null;
     }
 
-    private TestGenTypes testGenTypes = TestGenTypes.A;
-
-    enum TestGenTypes {
-        A,
-        B,
-        C
-    }
-
     /**
      * Generate the cube as the specified location
      *
@@ -194,16 +185,6 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
      * @param cubeZ      cube z location
      */
     public void generate(final ICubePrimer cubePrimer, int cubeX, int cubeY, int cubeZ) {
-        if (Keyboard.isKeyDown(Keyboard.KEY_0)) {
-            testGenTypes = TestGenTypes.A;
-        }
-        if (Keyboard.isKeyDown(Keyboard.KEY_1)) {
-            testGenTypes = TestGenTypes.B;
-        }
-        if (Keyboard.isKeyDown(Keyboard.KEY_2)) {
-            testGenTypes = TestGenTypes.C;
-        }
-
         if (PorkMethods.isCubeOutOfBounds(cubeZ)) {
             IBlockState barrier = Blocks.BARRIER.getDefaultState();
             for (int x = 0; x < Cube.SIZE; x++) {
@@ -278,61 +259,31 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         );
     }
 
-    private static double shrinkFactor = 1 - 0.999809371;
+    private static double shrinkFactor = 1 - 0.998809371;
 
     public double get(int x, int y, int z) {
-        if (testGenTypes == TestGenTypes.A) {
-            double groundNoise = groundNoiseCache.getUnchecked((((long) x) << 32) | (z & 0xffffffffL));
-            groundNoise = MathHelper.clamp((groundNoise - y) / 255, -1, 1);
-            double islandX = islandNoiseX.get(x, y, z),
-                    islandY = islandNoiseY.get(x, y, z),
-                    islandZ = islandNoiseZ.get(x, y, z); //this works fine now
+        double groundNoise = groundNoiseCache.getUnchecked((((long) x) << 32) | (z & 0xffffffffL));
+        groundNoise = MathHelper.clamp((groundNoise - (y - 128)) / 200, -1, 1);
+        double islandX = islandNoiseX.get(x, y, z),
+                islandY = islandNoiseY.get(x, y, z),
+                islandZ = islandNoiseZ.get(x, y, z); //this works fine now
 
-            boolean shouldIsland = islandX > 0 && islandY > 0 && islandZ > 0;
-            if (shouldIsland) {
-                groundNoise = (islandX + islandY + islandZ);
-            }
-            if (y > 0 && groundNoise > 0) {
-                groundNoise -= y * shrinkFactor;
-            }
-
-            return groundNoise;
-        } else if (testGenTypes == TestGenTypes.B) {
-            double groundNoise = groundNoiseCache.getUnchecked((((long) x) << 32) | (z & 0xffffffffL));
-            groundNoise = MathHelper.clamp((groundNoise - y) / 255, -1, 1);
-            double islandX = islandNoiseX.get(x, y, z),
-                    islandY = islandNoiseY.get(x, y / 4, z),
-                    islandZ = islandNoiseZ.get(x, y, z); //this works fine now
-
-            boolean shouldIsland = islandX > 0 && islandY > 0 && islandZ > 0;
-            if (shouldIsland) {
-                groundNoise = (islandX + islandY + islandZ);
-                groundNoise -= y * shrinkFactor;
-            }
-
-            return groundNoise;
-        } else {
-            double groundNoise = groundNoiseCache.getUnchecked((((long) x) << 32) | (z & 0xffffffffL));
-            groundNoise = MathHelper.clamp((groundNoise - (y - 128)) / 200, -1, 1);
-            double islandX = islandNoiseX.get(x, y, z),
-                    islandY = islandNoiseY.get(x, y / 4, z),
-                    islandZ = islandNoiseZ.get(x, y, z); //this works fine now
-
-            boolean shouldIsland = islandX > 0 && islandY > 0 && islandZ > 0;
-            if (shouldIsland) {
-                groundNoise = (islandX + islandY + islandZ);
-            }
-            groundNoise -= y * shrinkFactor;
-
-            return groundNoise;
+        boolean shouldIsland = islandX > 0 && islandY > 0 && islandZ > 0;
+        if (shouldIsland) {
+            groundNoise = (islandX + islandY + islandZ);
         }
+        if (y > 0 && groundNoise > 0) {
+            groundNoise -= y * shrinkFactor;
+        }
+
+        return groundNoise;
     }
 
     private void generateStructures(ICubePrimer cube, CubePos cubePos) {
         // generate world populator
-        if (this.conf.caves) {
+        /*if (this.conf.caves) {
             this.caveGenerator.generate(world, cube, cubePos);
-        }
+        }*/
         if (this.conf.ravines) {
             this.ravineGenerator.generate(world, cube, cubePos);
         }
