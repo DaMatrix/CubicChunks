@@ -42,9 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static cubicchunks.util.Coords.*;
-import static java.lang.Math.*;
-
 public class CubicStrongholdGenerator extends CubicFeatureGenerator {
 
     private CubePos[] structureCoords;
@@ -57,7 +54,7 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
     public CubicStrongholdGenerator(CustomGeneratorSettings conf) {
         super(3);
         this.conf = conf;
-        this.structureCoords = new CubePos[128];
+        this.structureCoords = new CubePos[8];
         this.distance = 16.0D;
         this.spread = 2;
         this.allowedBiomes = Lists.<Biome>newArrayList();
@@ -159,54 +156,12 @@ public class CubicStrongholdGenerator extends CubicFeatureGenerator {
         Random rand = new Random();
         rand.setSeed(this.world.getSeed());
 
-        double angle = rand.nextDouble() * Math.PI * 2.0D;
-
-        int minCubeY = blockToCube(conf.getMinHeight());
-        int maxCubeY = blockCeilToCube(conf.getAverageHeight());
-
-        int distFactor = 0;
-        int ringStep = 0;
         for (int i = 0; i < this.structureCoords.length; ++i) {
-            double distance = 4.0D * this.distance + this.distance * (double) distFactor * 6.0D + (rand.nextDouble() - 0.5D) * this.distance * 2.5D;
-            int chunkX;
-            int chunkY;
-            int chunkZ;
-            if (conf.alternateStrongholdsPositions) {
-                double yAngle = -rand.nextDouble() * Math.PI;
-                chunkX = (int) round(cos(angle) * cos(yAngle) * distance);
-                chunkY = (int) round(sin(yAngle) * distance) + maxCubeY; // TODO: use configuration-based offset
-                chunkZ = (int) round(sin(angle) * cos(yAngle) * distance);
-            } else {
-                chunkX = (int) round(cos(angle) * distance);
-                chunkY = MathHelper.getInt(rand, minCubeY, maxCubeY);
-                chunkZ = (int) round(sin(angle) * distance);
-            }
-            BlockPos blockPos = this.world.getBiomeProvider().findBiomePosition(
-                    cubeToCenterBlock(chunkX), cubeToCenterBlock(chunkZ), 112, this.allowedBiomes, rand);
-
-            if (blockPos != null) {
-                chunkX = blockToCube(blockPos.getX());
-                chunkZ = blockToCube(blockPos.getZ());
-            }
-
-            chunkX = Math.floorDiv(chunkX, this.spacing) * this.spacing;
-            chunkY = Math.floorDiv(chunkY, this.spacing) * this.spacing;
-            chunkZ = Math.floorDiv(chunkZ, this.spacing) * this.spacing;
-
-            if (i >= nextIndex) {
-                this.structureCoords[i] = new CubePos(chunkX, chunkY, chunkZ);
-            }
-
-            angle += (Math.PI * 2D) / (double) this.spread;
-            ++ringStep;
-
-            if (ringStep == this.spread) {
-                ++distFactor;
-                ringStep = 0;
-                this.spread += 2 * this.spread / (distFactor + 1);
-                this.spread = Math.min(this.spread, this.structureCoords.length - i);
-                angle += rand.nextDouble() * Math.PI * 2.0D;
-            }
+            structureCoords[i] = new CubePos(
+                    rand.nextInt(512) - 256,
+                    rand.nextInt(64) * -1,
+                    8
+            );
         }
     }
 }

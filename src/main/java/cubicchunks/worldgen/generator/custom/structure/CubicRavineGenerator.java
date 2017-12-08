@@ -54,7 +54,7 @@ public class CubicRavineGenerator extends CubicStructureGenerator {
      * <p>
      * Multiply by 16 and divide by 8: 16 cubes in vanilla chunks, only one in 8 cubes has structures generated
      */
-    private static final int RAVINE_RARITY = 50 * 16 / (2 * 2 * 2);
+    private static final int RAVINE_RARITY = 50 * 16 / (2 * 2 * 2) / 16;
 
     private static final int MAX_CUBE_Y = 2;
 

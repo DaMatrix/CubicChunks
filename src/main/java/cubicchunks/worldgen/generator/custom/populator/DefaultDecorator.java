@@ -76,7 +76,7 @@ public final class DefaultDecorator implements ICubicPopulator {
                         Float.MIN_VALUE, Float.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.gravelSpawnTries, cfg.gravelSpawnProbability,
                         new WorldGenMinable(Blocks.GRAVEL.getDefaultState(), cfg.gravelSpawnSize),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
+                        Float.MIN_VALUE, 0));
                 minables.add(new EnhancedMineable(cfg.dioriteSpawnTries, cfg.dioriteSpawnProbability,
                         new WorldGenMinable(diorite, cfg.dioriteSpawnSize),
                         Float.MIN_VALUE, Float.MAX_VALUE));

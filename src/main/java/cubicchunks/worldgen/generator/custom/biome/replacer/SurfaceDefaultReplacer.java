@@ -46,7 +46,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
-    protected static final IBlockState GRAVEL = Blocks.GRAVEL.getDefaultState();
     protected static final IBlockState RED_SANDSTONE = Blocks.RED_SANDSTONE.getDefaultState();
     protected static final IBlockState SANDSTONE = Blocks.SANDSTONE.getDefaultState();
 
@@ -81,9 +80,6 @@ public class SurfaceDefaultReplacer implements IBiomeBlockReplacer {
         double depth = depthNoise.get(x, 0, z);
         double densityAdjusted = density / abs(dy);
         if (density + dy <= 0) { // if air above
-            if (y < oceanHeight - 7 - depth) { // if we are deep into the ocean
-                return GRAVEL;
-            }
             if (y < oceanHeight - 1) { // if just below the ocean level
                 return filler(previousBlock, depth);
             }
