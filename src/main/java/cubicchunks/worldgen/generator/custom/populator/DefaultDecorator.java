@@ -58,15 +58,17 @@ public final class DefaultDecorator implements ICubicPopulator {
 
     public static class Ores implements ICubicPopulator {
 
-        public Set<EnhancedMineable> minables = new LinkedHashSet<>();
+        public static Set<EnhancedMineable> minables = new LinkedHashSet<>();
+        public static CustomGeneratorSettings cfg;
 
         @Override public void generate(ICubicWorld world, Random random, CubePos pos, CubicBiome biome) {
-            CustomGeneratorSettings cfg = CustomGeneratorSettings.fromJson(world.getWorldInfo().getGeneratorOptions());
-            generateOres(world, cfg, random, pos);
+            generateOres(world, null, random, pos);
         }
 
-        private void generateOres(ICubicWorld world, CustomGeneratorSettings cfg, Random random, CubePos pos) {
+        private void generateOres(ICubicWorld world, CustomGeneratorSettings aaaaa, Random random, CubePos pos) {
             if (minables.size() == 0)   {
+                cfg = CustomGeneratorSettings.fromJson(world.getWorldInfo().getGeneratorOptions());
+
                 IBlockState diorite = Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.DIORITE);
                 IBlockState granite = Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.GRANITE);
                 IBlockState andesite = Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.ANDESITE);

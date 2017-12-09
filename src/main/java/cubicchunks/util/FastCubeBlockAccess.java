@@ -123,37 +123,37 @@ public class FastCubeBlockAccess implements ILightBlockAccess {
     
     @Nullable
     private ExtendedBlockStorage getStorage(int blockX, int blockY, int blockZ) {
-        if (true) {
+        /*if (true) {
             return this.world.getCubeFromCubeCoords(blockToCube(blockX), blockToCube(blockY), blockToCube(blockZ)).getStorage();
-        }
-        int cubeX = Coords.blockToCube(blockX);
-        int cubeY = Coords.blockToCube(blockY);
-        int cubeZ = Coords.blockToCube(blockZ);
+        }*/
+        blockX = Coords.blockToCube(blockX);
+        blockY = Coords.blockToCube(blockY);
+        blockZ = Coords.blockToCube(blockZ);
 
-        return this.cache[cubeX - originX][cubeY - originY][cubeZ - originZ];
+        return this.cache[blockX - originX][blockY - originY][blockZ - originZ];
     }
 
     private void setStorage(int blockX, int blockY, int blockZ, @Nullable ExtendedBlockStorage ebs) {
-        if (true) {
+        /*if (true) {
             this.world.getCubeFromCubeCoords(blockToCube(blockX), blockToCube(blockY), blockToCube(blockZ)).setStorage(ebs);
             return;
-        }
-        int cubeX = Coords.blockToCube(blockX);
-        int cubeY = Coords.blockToCube(blockY);
-        int cubeZ = Coords.blockToCube(blockZ);
+        }*/
+        blockX = Coords.blockToCube(blockX);
+        blockY = Coords.blockToCube(blockY);
+        blockZ = Coords.blockToCube(blockZ);
 
-        this.cache[cubeX - originX][cubeY - originY][cubeZ - originZ] = ebs;
+        this.cache[blockX - originX][blockY - originY][blockZ - originZ] = ebs;
     }
 
     private Cube getCube(int blockX, int blockY, int blockZ) {
-        if (true) {
+        /*if (true) {
             return this.world.getCubeFromCubeCoords(blockToCube(blockX), blockToCube(blockY), blockToCube(blockZ));
-        }
-        int cubeX = Coords.blockToCube(blockX);
-        int cubeY = Coords.blockToCube(blockY);
-        int cubeZ = Coords.blockToCube(blockZ);
+        }*/
+        blockX = Coords.blockToCube(blockX);
+        blockY = Coords.blockToCube(blockY);
+        blockZ = Coords.blockToCube(blockZ);
 
-        return this.cubes[cubeX - originX][cubeY - originY][cubeZ - originZ];
+        return this.cubes[blockX - originX][blockY - originY][blockZ - originZ];
     }
 
     private IBlockState getBlockState(BlockPos pos) {

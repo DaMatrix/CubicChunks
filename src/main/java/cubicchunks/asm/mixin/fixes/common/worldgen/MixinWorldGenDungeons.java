@@ -25,21 +25,39 @@ package cubicchunks.asm.mixin.fixes.common.worldgen;
 
 import cubicchunks.world.ICubicWorld;
 import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.block.material.Material;
+import net.minecraft.init.Blocks;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityChest;
+import net.minecraft.tileentity.TileEntityMobSpawner;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenDungeons;
+import net.minecraft.world.storage.loot.LootTableList;
+import org.apache.logging.log4j.Logger;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
-import java.util.Random;
-
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Random;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 @Mixin(WorldGenDungeons.class)
-public class MixinWorldGenDungeons {
+public abstract class MixinWorldGenDungeons {
+
+    @Shadow
+    @Final
+    private static Logger LOGGER;
+
+    @Shadow
+    protected abstract ResourceLocation pickMobSpawner(Random rand);
 
     @ModifyConstant(method = "generate", constant = @Constant(
             intValue = 0,
