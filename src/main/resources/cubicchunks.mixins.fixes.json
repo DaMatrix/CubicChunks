@@ -31,6 +31,7 @@
         "common.MixinWorldEntitySpawner",
         "common.MixinBlockBed",
         "common.MixinCommandKill",
+        "common.MixinExtendedBlockStorage",
         "common.isblockloaded.MixinEntity",
         "common.isblockloaded.MixinEntityLivingBase",
         "common.worldgen.tree.MixinWorldGenCanopyTree",

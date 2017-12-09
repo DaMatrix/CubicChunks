@@ -62,7 +62,7 @@ class LightUpdateQueue {
      */
     static final int MAX_POS = Bits.getMaxSigned(POS_BITS);
     //note: value is unsigned
-    static final int MIN_VALUE = 5;
+    static final int MIN_VALUE = 6;
     static final int MAX_VALUE = Bits.getMaxUnsigned(VALUE_BITS);
     static final int MIN_DISTANCE = 0;
     static final int MAX_DISTANCE = Bits.getMaxUnsigned(DISTANCE_BITS);

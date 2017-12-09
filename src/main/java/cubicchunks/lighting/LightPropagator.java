@@ -149,7 +149,7 @@ public class LightPropagator {
                         // can't go further, the next block already has the same or higher light value
                         continue;
                     }
-                    blocks.setLightFor(type, nextPos, Math.max(6, newLight));
+                    blocks.setLightFor(type, nextPos, newLight);
                     setLightCallback.accept(nextPos);
 
                     // if no distance left - stop spreading, so that it won't run into problems when updating too much
@@ -178,6 +178,6 @@ public class LightPropagator {
          //if (type == EnumSkyBlock.SKY)
          //    return Math.max(6, Math.max(blocks.getEmittedLight(pos, type), blocks.getLightFromNeighbors(type, pos)));
          //else
-             return Math.max(blocks.getEmittedLight(pos, type), blocks.getLightFromNeighbors(type, pos));
+        return Math.max(6, Math.max(blocks.getEmittedLight(pos, type), blocks.getLightFromNeighbors(type, pos)));
     }
 }
