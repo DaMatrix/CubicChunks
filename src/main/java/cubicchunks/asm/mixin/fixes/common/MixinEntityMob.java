@@ -39,7 +39,7 @@ public abstract class MixinEntityMob extends EntityCreature {
 
     @Inject(method = "Lnet/minecraft/entity/monster/EntityMob;isValidLightLevel()Z", at = @At("HEAD"), cancellable = true)
     public void checkEndermanSpawn(CallbackInfoReturnable<Boolean> callbackInfoReturnable)  {
-        if (posY > 16000)   {
+        if (posY > 14000)   {
             if (((EntityCreature) this) instanceof EntityEnderman)  {
                 callbackInfoReturnable.setReturnValue(true);
             }
@@ -48,7 +48,7 @@ public abstract class MixinEntityMob extends EntityCreature {
 
     @Inject(method = "Lnet/minecraft/entity/monster/EntityMob;getCanSpawnHere()Z", at = @At("HEAD"), cancellable = true)
     public void checkEndermanSpawnv2(CallbackInfoReturnable<Boolean> callbackInfoReturnable)    {
-        if (posY > 16000)   {
+        if (posY > 14000)   {
             if (((EntityCreature) this) instanceof EntityEnderman)  {
                 callbackInfoReturnable.setReturnValue(true);
             }

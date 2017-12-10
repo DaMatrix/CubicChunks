@@ -145,7 +145,7 @@ public class ServerHeightMap implements IHeightMap {
 
     @Override
     public int getTopBlockY(int localX, int localZ) {
-        return this.ymax.get(getIndex(localX, localZ));
+        return Math.min(13999, this.ymax.get(getIndex(localX, localZ)));
     }
 
     @Override

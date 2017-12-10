@@ -105,11 +105,6 @@ public abstract class MixinEntity {
             WorldServer worldserver1 = minecraftserver.getWorld(dimensionIn);
             this.dimension = dimensionIn;
 
-            if (originalDim == 1 && dimensionIn == 1) {
-                worldserver1 = minecraftserver.getWorld(0);
-                this.dimension = 0;
-            }
-
             this.world.removeEntity(this_);
             this.isDead = false;
             this.world.profiler.startSection("reposition");
@@ -120,19 +115,22 @@ public abstract class MixinEntity {
             } else {
                 double d0 = this.posX;
                 double d1 = this.posZ;
+                double d2 = this.posY;
 
                 if (dimensionIn == -1) {
                     d0 = MathHelper.clamp(d0 / 8.0D, worldserver1.getWorldBorder().minX() + 16.0D, worldserver1.getWorldBorder().maxX() - 16.0D);
                     d1 = MathHelper.clamp(d1 / 8.0D, worldserver1.getWorldBorder().minZ() + 16.0D, worldserver1.getWorldBorder().maxZ() - 16.0D);
+                    d2 = d2 / 8.0D;
                 } else if (dimensionIn == 0) {
                     d0 = MathHelper.clamp(d0 * 8.0D, worldserver1.getWorldBorder().minX() + 16.0D, worldserver1.getWorldBorder().maxX() - 16.0D);
                     d1 = MathHelper.clamp(d1 * 8.0D, worldserver1.getWorldBorder().minZ() + 16.0D, worldserver1.getWorldBorder().maxZ() - 16.0D);
+                    d2 = d2 * 8.0D;
                 }
 
                 d0 = (double) MathHelper.clamp((int) d0, -29999872, 29999872);
                 d1 = (double) MathHelper.clamp((int) d1, -29999872, 29999872);
                 float f = this.rotationYaw;
-                this.setLocationAndAngles(d0, this.posY, d1, 90.0F, 0.0F);
+                this.setLocationAndAngles(d0, d2, d1, 90.0F, 0.0F);
                 Teleporter teleporter = worldserver1.getDefaultTeleporter();
                 teleporter.placeInExistingPortal(this_, f);
                 blockpos = new BlockPos(this_);

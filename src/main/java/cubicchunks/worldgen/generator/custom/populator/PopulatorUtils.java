@@ -54,9 +54,7 @@ public class PopulatorUtils {
     }
 
     public static void genOreUniform(ICubicWorld world, CustomGeneratorSettings cfg, Random random, CubePos pos,
-            int count, double probability, WorldGenerator generator, double minY, double maxY) {
-        int minBlockY = Math.round((float) (minY * cfg.heightFactor + cfg.heightOffset));
-        int maxBlockY = Math.round((float) (maxY * cfg.heightFactor + cfg.heightOffset));
+            int count, double probability, WorldGenerator generator, double minBlockY, double maxBlockY) {
         if (pos.getMinBlockY() > maxBlockY || pos.getMaxBlockY() < minBlockY) {
             return;
         }

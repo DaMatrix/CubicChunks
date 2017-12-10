@@ -75,82 +75,82 @@ public final class DefaultDecorator implements ICubicPopulator {
 
                 minables.add(new EnhancedMineable(cfg.dirtSpawnTries, cfg.dirtSpawnProbability,
                         new WorldGenMinable(Blocks.DIRT.getDefaultState(), cfg.dirtSpawnSize),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
+                        Integer.MIN_VALUE, Integer.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.gravelSpawnTries, cfg.gravelSpawnProbability,
                         new WorldGenMinable(Blocks.GRAVEL.getDefaultState(), cfg.gravelSpawnSize),
-                        Float.MIN_VALUE, 0));
+                        Integer.MIN_VALUE, 0));
                 minables.add(new EnhancedMineable(cfg.dioriteSpawnTries, cfg.dioriteSpawnProbability,
                         new WorldGenMinable(diorite, cfg.dioriteSpawnSize),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
+                        Integer.MIN_VALUE, Integer.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.graniteSpawnTries, cfg.graniteSpawnProbability,
                         new WorldGenMinable(granite, cfg.graniteSpawnSize),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
+                        Integer.MIN_VALUE, Integer.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.andesiteSpawnTries, cfg.andesiteSpawnProbability,
                         new WorldGenMinable(andesite, cfg.andesiteSpawnSize),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
+                        Integer.MIN_VALUE, Integer.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.coalOreSpawnTries, cfg.coalOreSpawnProbability,
                         new WorldGenMinable(Blocks.COAL_ORE.getDefaultState(), cfg.coalOreSpawnSize),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
+                        Integer.MIN_VALUE, Integer.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.ironOreSpawnTries, cfg.ironOreSpawnProbability,
                         new WorldGenMinable(Blocks.IRON_ORE.getDefaultState(), cfg.ironOreSpawnSize),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
+                        Integer.MIN_VALUE, Integer.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.goldOreSpawnTries, cfg.goldOreSpawnProbability,
                         new WorldGenMinable(Blocks.GOLD_ORE.getDefaultState(), cfg.goldOreSpawnSize),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
+                        Integer.MIN_VALUE, Integer.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.redstoneOreSpawnTries, cfg.redstoneOreSpawnProbability,
                         new WorldGenMinable(Blocks.REDSTONE_ORE.getDefaultState(), cfg.redstoneOreSpawnSize),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
+                        Integer.MIN_VALUE, Integer.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.diamondOreSpawnTries, cfg.diamondOreSpawnProbability,
                         new WorldGenMinable(Blocks.DIAMOND_ORE.getDefaultState(), cfg.diamondOreSpawnSize),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
+                        Integer.MIN_VALUE, Integer.MAX_VALUE));
                 minables.add(new EnhancedMineable(cfg.lapisLazuliSpawnTries, cfg.lapisLazuliSpawnProbability,
                         new WorldGenMinable(Blocks.LAPIS_ORE.getDefaultState(), cfg.lapisLazuliSpawnSize),
-                        Float.MIN_VALUE, Float.MAX_VALUE));
+                        Integer.MIN_VALUE, Integer.MAX_VALUE));
 
-                try {
+                /*try {
                     // sorry about this horrific code, but there's no other way to do it without adding mods to the build.gradle
                     //FORESTRY ORES
                     //Apatite
                     minables.add(new EnhancedMineable(1, 0.5f,
                             new WorldGenMinable(Block.getBlockFromName("forestry:resources").getStateFromMeta(0), 36),
-                            Float.MIN_VALUE, Float.MAX_VALUE));
+                            Integer.MIN_VALUE, Integer.MAX_VALUE));
                     //Copper
                     minables.add(new EnhancedMineable(3, 1f,
                             new WorldGenMinable(Block.getBlockFromName("forestry:resources").getStateFromMeta(1), 6),
-                            Float.MIN_VALUE, Float.MAX_VALUE));
+                            Integer.MIN_VALUE, Integer.MAX_VALUE));
                     //Tin
                     minables.add(new EnhancedMineable(4, 1f,
                             new WorldGenMinable(Block.getBlockFromName("forestry:resources").getStateFromMeta(2), 6),
-                            Float.MIN_VALUE, Float.MAX_VALUE));
+                            Integer.MIN_VALUE, Integer.MAX_VALUE));
 
                     //THERMAL EXPANSION ORES
                     minables.add(new EnhancedMineable(4, 1f,
                             new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(0), 8),
-                            Float.MIN_VALUE, Float.MAX_VALUE));
+                            Integer.MIN_VALUE, Integer.MAX_VALUE));
                     minables.add(new EnhancedMineable(4, 1f,
                             new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(1), 8),
-                            Float.MIN_VALUE, Float.MAX_VALUE));
+                            Integer.MIN_VALUE, Integer.MAX_VALUE));
                     minables.add(new EnhancedMineable(4, 1f,
                             new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(3), 7),
-                            Float.MIN_VALUE, Float.MAX_VALUE));
+                            Integer.MIN_VALUE, Integer.MAX_VALUE));
                     minables.add(new EnhancedMineable(3, 1f,
                             new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(2), 8),
-                            Float.MIN_VALUE, Float.MAX_VALUE));
+                            Integer.MIN_VALUE, Integer.MAX_VALUE));
                     minables.add(new EnhancedMineable(2, 1f,
                             new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore").getStateFromMeta(0), 5),
-                            Float.MIN_VALUE, Float.MAX_VALUE));
+                            Integer.MIN_VALUE, Integer.MAX_VALUE));
                     minables.add(new EnhancedMineable(1, 0.5f,
                             new WorldGenMinable(Block.getBlockFromName("thermalfoundation:ore_fluid").getDefaultState(), 15),
-                            Float.MIN_VALUE, Float.MAX_VALUE));
+                            Integer.MIN_VALUE, Integer.MAX_VALUE));
 
                     //BUILDCRAFT OIL
                     minables.add(new EnhancedMineable(1, 0.005f,
                             new WorldGenMinable(EnumSpring.OIL.liquidBlock, 170),
-                            Float.MIN_VALUE, 0));
+                            Integer.MIN_VALUE, 0));
                 } catch (NullPointerException e)    {
                     FMLLog.info("Unable to locate modded ores");
                     //e.printStackTrace();
-                }
+                }*/
             }
 
             for (EnhancedMineable mineable : minables)  {

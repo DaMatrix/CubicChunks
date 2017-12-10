@@ -30,6 +30,8 @@ import cubicchunks.world.cube.Cube;
 import cubicchunks.worldgen.generator.BasicCubeGenerator;
 import cubicchunks.worldgen.generator.CubePrimer;
 import cubicchunks.worldgen.generator.ICubePrimer;
+import cubicchunks.worldgen.generator.custom.builder.IBuilder;
+import cubicchunks.worldgen.generator.custom.builder.NoiseSource;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.block.state.pattern.BlockMatcher;
@@ -56,19 +58,41 @@ import java.util.Random;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class NetherTerrainGenerator extends BasicCubeGenerator {
-    private final ChunkGeneratorHell netherGen;
     public World vanillaWorld;
     public WorldGenMinable magmaGen = new WorldGenMinable(Blocks.MAGMA.getDefaultState(), 33, BlockMatcher.forBlock(Blocks.NETHERRACK));
     public WorldGenMinable quartzGen = new WorldGenMinable(Blocks.QUARTZ_ORE.getDefaultState(), 14, BlockMatcher.forBlock(Blocks.NETHERRACK));
     private Chunk chunkCache = null;
     private boolean optimizationHack = false;
 
+    private IBuilder islandNoiseX;
+    private IBuilder islandNoiseY;
+    private IBuilder islandNoiseZ;
+
     public NetherTerrainGenerator(ICubicWorld world, final long seed) {
         super(world);
 
         vanillaWorld = (World) world;
 
-        this.netherGen = new ChunkGeneratorHell((World) world, true, seed);
+        islandNoiseX = NoiseSource.perlin()
+                .seed(seed)
+                .frequency(0.005)
+                .octaves(3)
+                .normalizeTo(-1, 1)
+                .create();
+
+        islandNoiseY = NoiseSource.perlin()
+                .seed(seed / 2)
+                .frequency(0.03)
+                .octaves(3)
+                .normalizeTo(-1, 1)
+                .create();
+
+        islandNoiseZ = NoiseSource.perlin()
+                .seed(seed * 2)
+                .frequency(0.015)
+                .octaves(3)
+                .normalizeTo(-1, 1)
+                .create();
     }
 
     @Override
@@ -209,36 +233,28 @@ public class NetherTerrainGenerator extends BasicCubeGenerator {
 
         IBlockState netherrack = Blocks.NETHERRACK.getDefaultState();
 
-        if (cubeY >= 0 && cubeY <= 7) { //Generate Nether
-            IBlockState bedrock = Blocks.BEDROCK.getDefaultState();
-            Chunk chunk = chunkCache;
-            if (chunk == null || chunk.x != cubeX || chunk.z != cubeZ) {
-                chunk = netherGen.generateChunk(cubeX, cubeZ);
-                chunkCache = chunk;
-            }
-            if (!optimizationHack) {
-                optimizationHack = true;
-                // Recursive generation
-                for (int y = 0; y < 8; y++) {
-                    if (y == cubeY) {
-                        continue;
-                    }
-                    world.getCubeFromCubeCoords(cubeX, y, cubeZ);
-                }
-                optimizationHack = false;
-            }
+        if (cubeY >= -2000 && cubeY <= 2000) { //Generate Nether
+            boolean placeBlock;
+            BlockPos pos = new BlockPos(cubeX * 16, cubeY * 16, cubeZ * 16);
 
-            ExtendedBlockStorage storage = chunk.getBlockStorageArray()[cubeY];
-            if (storage != null && !storage.isEmpty()) {
-                for (int x = 0; x < Cube.SIZE; x++) {
-                    for (int y = 0; y < Cube.SIZE; y++) {
-                        for (int z = 0; z < Cube.SIZE; z++) {
-                            IBlockState state = storage.get(x, y, z);
-                            if (state == bedrock) {
-                                cubePrimer.setBlockState(x, y, z, netherrack);
-                            } else {
-                                cubePrimer.setBlockState(x, y, z, state);
-                            }
+            for (int x = 0; x < Cube.SIZE; x++) {
+                int modifiedX = pos.x + x;
+                for (int y = 0; y < Cube.SIZE; y++) {
+                    int modifiedY = pos.y + y;
+                    int factor = Math.abs(modifiedY);
+                    double acceptanceThreshold = factor * shrinkFactor;
+                    for (int z = 0; z < Cube.SIZE; z++) {
+                        placeBlock = true;
+                        int modifiedZ = pos.z + z;
+                        double islandX = islandNoiseX.get(modifiedX, modifiedY, modifiedZ);
+                        double islandY = islandNoiseY.get(modifiedX, modifiedY, modifiedZ);
+                        double islandZ = islandNoiseZ.get(modifiedX, modifiedY, modifiedZ);
+                        if (islandX + islandY + islandZ > acceptanceThreshold) {
+                            placeBlock = false;
+                        }
+
+                        if (placeBlock) {
+                            cubePrimer.setBlockState(x, y, z, netherrack);
                         }
                     }
                 }
@@ -254,4 +270,6 @@ public class NetherTerrainGenerator extends BasicCubeGenerator {
             }
         }
     }
+
+    private static double shrinkFactor = 1 - 0.999709371;
 }

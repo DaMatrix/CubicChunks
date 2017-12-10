@@ -23,6 +23,7 @@
  */
 package cubicchunks.asm.mixin.fixes.common;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.play.server.SPacketChangeGameState;
@@ -34,6 +35,7 @@ import net.minecraft.server.management.DemoPlayerInteractionManager;
 import net.minecraft.server.management.PlayerInteractionManager;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import org.spongepowered.asm.mixin.Final;
@@ -48,25 +50,34 @@ import java.util.UUID;
 
 @Mixin(PlayerList.class)
 public abstract class MixinPlayerList {
-    @Shadow @Final private MinecraftServer mcServer;
+    @Shadow
+    @Final
+    private MinecraftServer mcServer;
 
-    @Shadow @Final private List<EntityPlayerMP> playerEntityList;
+    @Shadow
+    @Final
+    private List<EntityPlayerMP> playerEntityList;
+    @Shadow
+    @Final
+    private Map<UUID, EntityPlayerMP> uuidToPlayerMap;
 
-    @Shadow protected abstract void setPlayerGameTypeBasedOnOther(EntityPlayerMP target, EntityPlayerMP source, World worldIn);
+    @Shadow
+    protected abstract void setPlayerGameTypeBasedOnOther(EntityPlayerMP target, EntityPlayerMP source, World worldIn);
 
-    @Shadow public abstract void updateTimeAndWeatherForPlayer(EntityPlayerMP playerIn, WorldServer worldIn);
+    @Shadow
+    public abstract void updateTimeAndWeatherForPlayer(EntityPlayerMP playerIn, WorldServer worldIn);
 
-    @Shadow public abstract void updatePermissionLevel(EntityPlayerMP player);
-
-    @Shadow @Final private Map<UUID, EntityPlayerMP> uuidToPlayerMap;
+    @Shadow
+    public abstract void updatePermissionLevel(EntityPlayerMP player);
 
     /**
      * ahd
-     * @author xkdh
+     *
      * @param playerIn
      * @param dimension
      * @param conqueredEnd
      * @return
+     * @author xkdh
      */
     @Overwrite
     public EntityPlayerMP recreatePlayerEntity(EntityPlayerMP playerIn, int dimension, boolean conqueredEnd) {
@@ -127,7 +138,7 @@ public abstract class MixinPlayerList {
 
         worldserver.getChunkProvider().provideChunk((int) entityplayermp.posX >> 4, (int) entityplayermp.posZ >> 4);
 
-        while (!worldserver.getCollisionBoxes(entityplayermp, entityplayermp.getEntityBoundingBox()).isEmpty() && entityplayermp.posY < 256.0D) {
+        while (!worldserver.getCollisionBoxes(entityplayermp, entityplayermp.getEntityBoundingBox()).isEmpty()) {
             entityplayermp.setPosition(entityplayermp.posX, entityplayermp.posY + 1.0D, entityplayermp.posZ);
         }
 
@@ -146,5 +157,80 @@ public abstract class MixinPlayerList {
         entityplayermp.setHealth(entityplayermp.getHealth());
         net.minecraftforge.fml.common.FMLCommonHandler.instance().firePlayerRespawnEvent(entityplayermp, conqueredEnd);
         return entityplayermp;
+    }
+
+    /**
+     * asdf
+     *
+     * @author DaPorkchop_
+     */
+    //@Overwrite
+    public void transferEntityToWorld(Entity entityIn, int lastDimension, WorldServer oldWorldIn, WorldServer toWorldIn, net.minecraft.world.Teleporter teleporter)
+    {
+        net.minecraft.world.WorldProvider pOld = oldWorldIn.provider;
+        net.minecraft.world.WorldProvider pNew = toWorldIn.provider;
+        double moveFactor = pOld.getMovementFactor() / pNew.getMovementFactor();
+        double d0 = entityIn.posX * moveFactor;
+        double d1 = entityIn.posZ * moveFactor;
+        double d2 = entityIn.posY * moveFactor;
+        float f = entityIn.rotationYaw;
+        oldWorldIn.profiler.startSection("moving");
+
+        if (false && entityIn.dimension == -1) {
+            d0 = MathHelper.clamp(d0 / 8.0D, toWorldIn.getWorldBorder().minX() + 16.0D, toWorldIn.getWorldBorder().maxX() - 16.0D);
+            d1 = MathHelper.clamp(d1 / 8.0D, toWorldIn.getWorldBorder().minZ() + 16.0D, toWorldIn.getWorldBorder().maxZ() - 16.0D);
+            d2 = d2 / 8.0d;
+            entityIn.setLocationAndAngles(d0, d2, d1, entityIn.rotationYaw, entityIn.rotationPitch);
+
+            if (entityIn.isEntityAlive()) {
+                oldWorldIn.updateEntityWithOptionalForce(entityIn, false);
+            }
+        } else if (false && entityIn.dimension == 0) {
+            d0 = MathHelper.clamp(d0 * 8.0D, toWorldIn.getWorldBorder().minX() + 16.0D, toWorldIn.getWorldBorder().maxX() - 16.0D);
+            d1 = MathHelper.clamp(d1 * 8.0D, toWorldIn.getWorldBorder().minZ() + 16.0D, toWorldIn.getWorldBorder().maxZ() - 16.0D);
+            entityIn.setLocationAndAngles(d0, d2, d1, entityIn.rotationYaw, entityIn.rotationPitch);
+
+            if (entityIn.isEntityAlive()) {
+                oldWorldIn.updateEntityWithOptionalForce(entityIn, false);
+            }
+        }
+
+        if (entityIn.dimension == 1) {
+            BlockPos blockpos;
+
+            if (lastDimension == 1) {
+                blockpos = toWorldIn.getSpawnPoint();
+            } else {
+                blockpos = toWorldIn.getSpawnCoordinate();
+            }
+
+            d0 = (double) blockpos.getX();
+            entityIn.posY = (double) blockpos.getY();
+            d1 = (double) blockpos.getZ();
+            entityIn.setLocationAndAngles(d0, entityIn.posY, d1, 90.0F, 0.0F);
+
+            if (entityIn.isEntityAlive()) {
+                oldWorldIn.updateEntityWithOptionalForce(entityIn, false);
+            }
+        }
+
+        oldWorldIn.profiler.endSection();
+
+        if (lastDimension != 1) {
+            oldWorldIn.profiler.startSection("placing");
+            d0 = (double) MathHelper.clamp((int) d0, -29999872, 29999872);
+            d1 = (double) MathHelper.clamp((int) d1, -29999872, 29999872);
+
+            if (entityIn.isEntityAlive()) {
+                entityIn.setLocationAndAngles(d0, d2, d1, entityIn.rotationYaw, entityIn.rotationPitch);
+                teleporter.placeInPortal(entityIn, f);
+                toWorldIn.spawnEntity(entityIn);
+                toWorldIn.updateEntityWithOptionalForce(entityIn, false);
+            }
+
+            oldWorldIn.profiler.endSection();
+        }
+
+        entityIn.setWorld(toWorldIn);
     }
 }

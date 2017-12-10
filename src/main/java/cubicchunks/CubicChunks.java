@@ -106,7 +106,7 @@ public class CubicChunks {
     public static final int MIN_BLOCK_Y = Integer.MIN_VALUE >> 1;
     public static final int MAX_BLOCK_Y = Integer.MAX_VALUE >> 1;
 
-    public static final boolean DEBUG_ENABLED = System.getProperty("cubicchunks.debug", "false").equalsIgnoreCase("true");
+    public static final boolean DEBUG_ENABLED = System.getProperty("cubicchunks.debug", "true").equalsIgnoreCase("true");
     public static final String MODID = "cubicchunks";
     public static final String VERSION = "@@VERSION@@";
     public static final String MALISIS_VERSION = "@@MALISIS_VERSION@@";
