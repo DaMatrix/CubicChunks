@@ -48,7 +48,7 @@ public abstract class MixinBlockBed extends Block {
     at = @At("HEAD"),
     cancellable = true)
     public void explodeInFakedEnd(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ, CallbackInfoReturnable<Boolean> callbackInfoReturnable)   {
-        if (pos.y > 16000)  {
+        if (pos.y > 14000)  {
             worldIn.setBlockToAir(pos);
             BlockPos blockpos = pos.offset(((EnumFacing)state.getValue(BlockHorizontal.FACING)).getOpposite());
 

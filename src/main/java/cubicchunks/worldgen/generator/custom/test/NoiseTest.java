@@ -23,31 +23,64 @@
  */
 package cubicchunks.worldgen.generator.custom.test;
 
+import cubicchunks.world.cube.Cube;
 import cubicchunks.worldgen.generator.custom.builder.IBuilder;
 import cubicchunks.worldgen.generator.custom.builder.NoiseSource;
+import net.minecraft.util.math.BlockPos;
 
 public class NoiseTest {
+    private static double shrinkFactor = 1 - 0.998409371;
+
     public static void main(String... args) {
         IBuilder builder = NoiseSource.perlin()
+                .frequency(0.06)
+                .octaves(6)
+                .normalizeTo(-1, 1)
+                .seed(System.currentTimeMillis() * 2)
+                .create();
+        IBuilder builder1 = NoiseSource.perlin()
+                .frequency(0.06)
+                .octaves(6)
+                .normalizeTo(-1, 1)
+                .seed(System.currentTimeMillis() / 2)
+                .create();
+        IBuilder builder2 = NoiseSource.perlin()
                 .frequency(0.06)
                 .octaves(6)
                 .normalizeTo(-1, 1)
                 .seed(System.currentTimeMillis())
                 .create();
 
-        double min = Double.MAX_VALUE, max = Double.MIN_VALUE;
-        for (int x = -100000; x < 900000; x++)    {
-            double valueX = builder.get(x, 0, 0) * 256;
-            double valueY = builder.get(0, x, 0) * 256;
-            double valueZ = builder.get(0, 0, x) * 256;
-            double value = (valueX + valueY + valueZ) / 3;
-            if (value < min)    {
-                min = value;
-            } else if (value > max) {
-                max = value;
+        boolean placeBlock;
+        int filled = 0, empty = 0;
+        BlockPos pos = new BlockPos(0, -5, 0);
+        for (int i = 0; i < 10; i++) {
+            for (int x = 0; x < Cube.SIZE; x++) {
+                int modifiedX = pos.x + x;
+                for (int y = 0; y < Cube.SIZE; y++) {
+                    int modifiedY = pos.y + y;
+                    int factor = Math.abs(modifiedY);
+                    double acceptanceThreshold = factor * shrinkFactor;
+                    for (int z = 0; z < Cube.SIZE; z++) {
+                        placeBlock = true;
+                        int modifiedZ = pos.z + z;
+                        double islandX = builder.get(modifiedX, modifiedY, modifiedZ);
+                        double islandY = builder1.get(modifiedX, modifiedY, modifiedZ);
+                        double islandZ = builder2.get(modifiedX, modifiedY, modifiedZ);
+                        if (islandX + islandY + islandZ > acceptanceThreshold) {
+                            placeBlock = false;
+                        }
+
+                        if (placeBlock) {
+                            filled++;
+                        } else {
+                            empty++;
+                        }
+                    }
+                }
             }
-            System.out.println((value > 0) + " " + (valueX > 0) + " " + (valueY > 0) + " " + (valueZ > 0));
+            pos.y += 16;
         }
-        System.out.println(min + " " + max);
+        System.out.println(filled + " " + empty);
     }
 }

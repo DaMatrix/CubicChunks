@@ -57,7 +57,7 @@ public abstract class MixinBlockEndPortal {
 
         if (!worldIn.isRemote && !entityIn.isRiding() && !entityIn.isBeingRidden() && entityIn.isNonBoss() && entityIn.getEntityBoundingBox().intersects(state.getBoundingBox(worldIn, pos).offset(pos))) {
             BlockPos spawnPoint;
-            CHECK: if (entityIn.posY > 16000)  {
+            CHECK: if (entityIn.posY > 14000)  {
                 if (entityIn instanceof EntityPlayer)   {
                     EntityPlayer player = (EntityPlayer) entityIn;
                         spawnPoint = player.getBedLocation();
@@ -79,11 +79,11 @@ public abstract class MixinBlockEndPortal {
                 }
 
                 spawnPoint = PorkMethods.getSafeSpawnPoint(worldIn,
-                        new BlockPos(0, PorkMethods.overworldSpawnOffset,  0),
+                        new BlockPos(0, PorkMethods.overworldSpawnOffset,  128),
                         128,256, 120);
             } else {
                 spawnPoint = PorkMethods.getSafeSpawnPoint(worldIn,
-                        new BlockPos(0, 16040,  0),
+                        new BlockPos(0, 16000,  120),
                         128,256, 120);
             }
             entityIn.setPositionAndUpdate(spawnPoint.x + 0.5, spawnPoint.y, spawnPoint.z + 0.5);

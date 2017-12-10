@@ -59,9 +59,9 @@ public class ChunkGc implements IConfigUpdateListener {
             tick = 0;
             chunkGc();
         }
-        if (CubicChunks.DEBUG_ENABLED) {
+        /*if (CubicChunks.DEBUG_ENABLED) {
             verifyColumnConsistency();
-        }
+        }*/
     }
 
     private void verifyColumnConsistency() {

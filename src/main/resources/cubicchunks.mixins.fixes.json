@@ -19,8 +19,6 @@
         "common.MixinTeleporter",
         "common.MixinTileEntityEndGateway",
         "common.MixinPacketBufferBlockPosWrite",
-        "common.MixinEndCityStart",
-        "common.MixinChunkGeneratorEnd",
         "common.MixinBlockChorusFlower",
         "common.MixinEntityMob",
         "common.MixinEntity",
