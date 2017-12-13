@@ -23,6 +23,7 @@
  */
 package cubicchunks.asm.mixin.fixes.common;
 
+import cubicchunks.api.IKillDelayEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.nbt.NBTTagCompound;
@@ -45,9 +46,21 @@ import team.pepsi.ccaddon.PorkMethods;
 import javax.annotation.Nullable;
 
 @Mixin(Entity.class)
-public abstract class MixinEntity {
+public abstract class MixinEntity implements IKillDelayEntity {
     @Shadow
     public World world;
+
+    private long addon_lastKillTime = System.currentTimeMillis();
+
+    @Override
+    public void setLastKill(long time) {
+        addon_lastKillTime = time;
+    }
+
+    @Override
+    public long lastKill() {
+        return addon_lastKillTime;
+    }
 
     @Shadow
     public boolean isDead;
@@ -61,14 +74,6 @@ public abstract class MixinEntity {
     public float rotationYaw;
     @Shadow
     public double posY;
-    @Shadow
-    public int timeUntilPortal;
-    @Shadow
-    protected BlockPos lastPortalPos;
-    @Shadow
-    protected Vec3d lastPortalVec;
-    @Shadow
-    protected EnumFacing teleportDirection;
 
     @Shadow
     @Nullable

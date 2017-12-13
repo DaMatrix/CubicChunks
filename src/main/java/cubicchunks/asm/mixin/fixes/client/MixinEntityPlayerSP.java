@@ -56,4 +56,10 @@ public class MixinEntityPlayerSP extends AbstractClientPlayer {
     public boolean canEntityUpdate_isBlockLoadedRedirect(World world, BlockPos pos) {
         return MixinUtils.canTickPosition(world, pos);
     }
+
+    @Inject(method = "Lnet/minecraft/client/entity/EntityPlayerSP;setServerBrand(Ljava/lang/String;)V",
+    at = @At("HEAD"))
+    public void fixBorder(String brand, CallbackInfo callbackInfo)  {
+        PorkMethods.isForgeSever = brand.trim().toLowerCase().endsWith("forge");
+    }
 }

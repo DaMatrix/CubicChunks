@@ -28,22 +28,24 @@ import cubicchunks.world.ICubicWorld;
 import cubicchunks.world.column.IColumn;
 import cubicchunks.world.cube.Cube;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.Entity;
 import net.minecraft.init.Biomes;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.border.WorldBorder;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.fml.common.FMLLog;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import team.pepsi.ccaddon.PorkMethods;
 
 import static cubicchunks.asm.JvmNames.CHUNK_IS_POPULATED;
 
@@ -56,7 +58,7 @@ public abstract class MixinWorld implements ICubicWorld {
     @Shadow
     @Final
     public WorldProvider provider;
-    public BlockPos addon_forcedSpawn = new BlockPos(0, 64, 128);
+    public BlockPos addon_forcedSpawn = new BlockPos(0, PorkMethods.overworldSpawnOffset, 128);
 
     @Shadow
     public abstract WorldBorder getWorldBorder();
@@ -82,13 +84,26 @@ public abstract class MixinWorld implements ICubicWorld {
             callbackInfoReturnable.setReturnValue(Biomes.SKY);
         }
     }
-
-    /**
-     * why do i need a javadoc for this wtf mixin
-     * @author DaPorkchop_
-     */
-    @Overwrite
-    public BlockPos getSpawnPoint() {
-        return addon_forcedSpawn;
+    @Inject(method = "getSpawnPoint",
+            at = @At("HEAD"),
+            cancellable = true)
+    public void preGetSpawnPoint(CallbackInfoReturnable<BlockPos> callbackInfoReturnable) {
+        callbackInfoReturnable.setReturnValue(addon_forcedSpawn);
     }
+
+    /*@Inject(method = "Lnet/minecraft/world/World;updateEntityWithOptionalForce(Lnet/minecraft/entity/Entity;Z)V",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/profiler/Profiler;endSection()V"))
+    public void betterMovementCheck(Entity e, boolean idk, CallbackInfo callbackInfo) {
+        //if (e.is)
+        double diffX = Math.abs(e.posX - e.lastTickPosX);
+        double diffY = Math.abs(e.posY - e.lastTickPosY);
+        double diffZ = Math.abs(e.posZ - e.lastTickPosZ);
+        if (diffX * diffX + diffY * diffY + diffZ * diffZ >= 4) { //2 blocks in one tick
+            e.posX = e.lastTickPosX;
+            e.posY = e.lastTickPosY;
+            e.posZ = e.lastTickPosZ;
+            FMLLog.info("Entity " + e.getName() + " moved too fast xd");
+        }
+    }*/
 }
