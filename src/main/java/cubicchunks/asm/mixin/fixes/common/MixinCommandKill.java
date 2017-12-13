@@ -23,12 +23,14 @@
  */
 package cubicchunks.asm.mixin.fixes.common;
 
+import cubicchunks.api.IKillDelayEntity;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandKill;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.TextComponentString;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
@@ -52,6 +54,13 @@ public abstract class MixinCommandKill {
     @Overwrite
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         EntityPlayer player = CommandBase.getCommandSenderAsPlayer(sender);
+        IKillDelayEntity delayEntity = (IKillDelayEntity) player;
+        if (delayEntity.lastKill() + 10000 >= System.currentTimeMillis())   {
+            sender.sendMessage(new TextComponentString("You have to wait at least 10 seconds before you can run this command agian!"));
+            return;
+        } else {
+            delayEntity.setLastKill(System.currentTimeMillis());
+        }
         player.onKillCommand();
     }
 }

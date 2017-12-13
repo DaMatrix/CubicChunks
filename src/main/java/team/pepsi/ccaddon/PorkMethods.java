@@ -24,11 +24,15 @@
 package team.pepsi.ccaddon;
 
 import cubicchunks.util.CubePos;
+import cubicchunks.world.ICubicWorld;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -38,6 +42,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class PorkMethods {
     public static boolean isDedicatedServer = false;
+    public static boolean isForgeSever = false;
     public static int overworldSpawnOffset = 320;
 
     /**
