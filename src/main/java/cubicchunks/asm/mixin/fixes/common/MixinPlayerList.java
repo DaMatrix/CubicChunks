@@ -171,14 +171,14 @@ public abstract class MixinPlayerList {
         net.minecraft.world.WorldProvider pNew = toWorldIn.provider;
         double moveFactor = pOld.getMovementFactor() / pNew.getMovementFactor();
         double d0 = entityIn.posX * moveFactor;
-        double d1 = entityIn.posZ * moveFactor;
+        double d1 = 128d;
         double d2 = entityIn.posY * moveFactor;
         float f = entityIn.rotationYaw;
         oldWorldIn.profiler.startSection("moving");
 
         if (false && entityIn.dimension == -1) {
             d0 = MathHelper.clamp(d0 / 8.0D, toWorldIn.getWorldBorder().minX() + 16.0D, toWorldIn.getWorldBorder().maxX() - 16.0D);
-            d1 = MathHelper.clamp(d1 / 8.0D, toWorldIn.getWorldBorder().minZ() + 16.0D, toWorldIn.getWorldBorder().maxZ() - 16.0D);
+            //d1 = MathHelper.clamp(d1 / 8.0D, toWorldIn.getWorldBorder().minZ() + 16.0D, toWorldIn.getWorldBorder().maxZ() - 16.0D);
             d2 = d2 / 8.0d;
             entityIn.setLocationAndAngles(d0, d2, d1, entityIn.rotationYaw, entityIn.rotationPitch);
 
@@ -187,7 +187,7 @@ public abstract class MixinPlayerList {
             }
         } else if (false && entityIn.dimension == 0) {
             d0 = MathHelper.clamp(d0 * 8.0D, toWorldIn.getWorldBorder().minX() + 16.0D, toWorldIn.getWorldBorder().maxX() - 16.0D);
-            d1 = MathHelper.clamp(d1 * 8.0D, toWorldIn.getWorldBorder().minZ() + 16.0D, toWorldIn.getWorldBorder().maxZ() - 16.0D);
+            //d1 = MathHelper.clamp(d1 * 8.0D, toWorldIn.getWorldBorder().minZ() + 16.0D, toWorldIn.getWorldBorder().maxZ() - 16.0D);
             entityIn.setLocationAndAngles(d0, d2, d1, entityIn.rotationYaw, entityIn.rotationPitch);
 
             if (entityIn.isEntityAlive()) {
@@ -219,7 +219,7 @@ public abstract class MixinPlayerList {
         if (lastDimension != 1) {
             oldWorldIn.profiler.startSection("placing");
             d0 = (double) MathHelper.clamp((int) d0, -29999872, 29999872);
-            d1 = (double) MathHelper.clamp((int) d1, -29999872, 29999872);
+            d1 = (double) MathHelper.clamp((int) d1, 0, 255);
 
             if (entityIn.isEntityAlive()) {
                 entityIn.setLocationAndAngles(d0, d2, d1, entityIn.rotationYaw, entityIn.rotationPitch);
