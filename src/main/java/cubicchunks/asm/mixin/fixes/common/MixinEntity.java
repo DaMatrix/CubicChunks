@@ -26,6 +26,7 @@ package cubicchunks.asm.mixin.fixes.common;
 import cubicchunks.api.IKillDelayEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumFacing;
@@ -87,6 +88,10 @@ public abstract class MixinEntity implements IKillDelayEntity {
 
     @Shadow public abstract void setPosition(double x, double y, double z);
 
+    @Shadow protected boolean inPortal;
+
+    @Shadow private boolean invulnerable;
+
     /**
      * ree
      *
@@ -119,21 +124,21 @@ public abstract class MixinEntity implements IKillDelayEntity {
                 blockpos = worldserver1.getSpawnCoordinate();
             } else {
                 double d0 = this.posX;
-                double d1 = this.posZ;
+                double d1 = 128d;
                 double d2 = this.posY;
 
                 if (dimensionIn == -1) {
                     d0 = MathHelper.clamp(d0 / 8.0D, worldserver1.getWorldBorder().minX() + 16.0D, worldserver1.getWorldBorder().maxX() - 16.0D);
-                    d1 = MathHelper.clamp(d1 / 8.0D, worldserver1.getWorldBorder().minZ() + 16.0D, worldserver1.getWorldBorder().maxZ() - 16.0D);
+                    //d1 = MathHelper.clamp(d1 / 8.0D, worldserver1.getWorldBorder().minZ() + 16.0D, worldserver1.getWorldBorder().maxZ() - 16.0D);
                     d2 = d2 / 8.0D;
                 } else if (dimensionIn == 0) {
                     d0 = MathHelper.clamp(d0 * 8.0D, worldserver1.getWorldBorder().minX() + 16.0D, worldserver1.getWorldBorder().maxX() - 16.0D);
-                    d1 = MathHelper.clamp(d1 * 8.0D, worldserver1.getWorldBorder().minZ() + 16.0D, worldserver1.getWorldBorder().maxZ() - 16.0D);
+                    //d1 = MathHelper.clamp(d1 * 8.0D, worldserver1.getWorldBorder().minZ() + 16.0D, worldserver1.getWorldBorder().maxZ() - 16.0D);
                     d2 = d2 * 8.0D;
                 }
 
                 d0 = (double) MathHelper.clamp((int) d0, -29999872, 29999872);
-                d1 = (double) MathHelper.clamp((int) d1, -29999872, 29999872);
+                //d1 = (double) MathHelper.clamp((int) d1, -29999872, 29999872);
                 float f = this.rotationYaw;
                 this.setLocationAndAngles(d0, d2, d1, 90.0F, 0.0F);
                 Teleporter teleporter = worldserver1.getDefaultTeleporter();
@@ -177,9 +182,17 @@ public abstract class MixinEntity implements IKillDelayEntity {
     public void postEntityUpdate(CallbackInfo callbackInfo) {
         if (!world.isRemote) {
             if (this.posZ < 0) {
-                this.setPosition(this.posX, this.posY, 0);
-            } else if (this.posZ > 255) {
-                this.setPosition(this.posX, this.posY, 255);
+                if (Entity.class.cast(this) instanceof EntityPlayerMP) {
+                    EntityPlayerMP.class.cast(this).setPositionAndUpdate(this.posX, this.posY, 0);
+                } else {
+                    setPosition(posX, posY, 0);
+                }
+            } else if (this.posZ > 256) {
+                if (Entity.class.cast(this) instanceof EntityPlayerMP) {
+                    EntityPlayerMP.class.cast(this).setPositionAndUpdate(this.posX, this.posY, 255);
+                } else {
+                    setPosition(posX, posY, 255);
+                }
             }
         }
     }
