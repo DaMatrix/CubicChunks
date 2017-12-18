@@ -23,8 +23,6 @@
  */
 package cubicchunks.worldgen.generator.custom;
 
-import com.flowpowered.noise.NoiseQuality;
-import com.flowpowered.noise.module.source.Perlin;
 import cubicchunks.api.worldgen.biome.CubicBiome;
 import cubicchunks.api.worldgen.populator.CubePopulatorEvent;
 import cubicchunks.api.worldgen.populator.ICubicPopulator;
@@ -42,9 +40,6 @@ import cubicchunks.worldgen.generator.custom.builder.BiomeSource;
 import cubicchunks.worldgen.generator.custom.builder.IBuilder;
 import cubicchunks.worldgen.generator.custom.builder.NoiseConsumer;
 import cubicchunks.worldgen.generator.custom.builder.NoiseSource;
-import cubicchunks.worldgen.generator.custom.structure.CubicCaveGenerator;
-import cubicchunks.worldgen.generator.custom.structure.CubicRavineGenerator;
-import cubicchunks.worldgen.generator.custom.structure.CubicStructureGenerator;
 import cubicchunks.worldgen.generator.custom.structure.feature.CubicFeatureGenerator;
 import cubicchunks.worldgen.generator.custom.structure.feature.CubicStrongholdGenerator;
 import mcp.MethodsReturnNonnullByDefault;
@@ -53,11 +48,8 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.monster.EntityShulker;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.ChunkGeneratorEnd;
 import net.minecraftforge.common.MinecraftForge;
 import team.pepsi.ccaddon.PorkMethods;
 
@@ -76,15 +68,9 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
 
     private final BiomeSource biomeSource;
     private final CustomGeneratorSettings conf;
-    private Perlin groundNoise;
     private IBuilder islandNoiseX;
     private IBuilder islandNoiseY;
     private IBuilder islandNoiseZ;
-    //TODO: Implement more structures
-    @Nonnull
-    private CubicCaveGenerator caveGenerator = new CubicCaveGenerator();
-    @Nonnull
-    private CubicStructureGenerator ravineGenerator = new CubicRavineGenerator();
     @Nonnull
     private CubicFeatureGenerator strongholds;
 
@@ -101,30 +87,24 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     }
 
     private void initGenerator(long seed) {
-        groundNoise = new Perlin();
-        groundNoise.setNoiseQuality(NoiseQuality.STANDARD);
-        groundNoise.setOctaveCount(6);
-        groundNoise.setFrequency(0.006);
-        groundNoise.setSeed((int) (seed / (Math.pow(2, 32))));
-
         islandNoiseX = NoiseSource.perlin()
                 .seed(seed)
                 .frequency(0.012)
-                .octaves(3)
+                .octaves(6)
                 .normalizeTo(-1, 1)
                 .create();
 
         islandNoiseY = NoiseSource.perlin()
                 .seed(seed / 2)
                 .frequency(0.05)
-                .octaves(3)
+                .octaves(6)
                 .normalizeTo(-1, 1)
                 .create();
 
         islandNoiseZ = NoiseSource.perlin()
                 .seed(seed / 4)
                 .frequency(0.012)
-                .octaves(3)
+                .octaves(6)
                 .normalizeTo(-1, 1)
                 .create();
     }
@@ -177,98 +157,45 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
             return;
         }
 
-        if (cubeY < 0) {
-            IBlockState stone = Blocks.STONE.getDefaultState();
-            for (int x = 0; x < Cube.SIZE; x++) {
-                for (int y = 0; y < Cube.SIZE; y++) {
-                    for (int z = 0; z < Cube.SIZE; z++) {
-                        cubePrimer.setBlockState(x, y, z, stone);
-                    }
-                }
-            }
-            return;
-        } else if (cubeY > 125 && cubeY < 875)    {
-            return;
-        } else if (cubeY > 875 && cubeY < 1125)    {
-            IBlockState endstone = Blocks.END_STONE.getDefaultState();
-            double groundNoise;
-            BlockPos pos = new BlockPos(cubeX * 16, cubeY * 16, cubeZ * 16);
-
-            for (int x = 0; x < Cube.SIZE; x++) {
-                for (int y = 0; y < Cube.SIZE; y++) {
-                    for (int z = 0; z < Cube.SIZE; z++) {
-                        groundNoise = 0;
-                        int modifiedX = pos.x + x;
-                        int modifiedY = pos.y + y;
-                        int modifiedZ = pos.z + z;
-                        double islandX = islandNoiseX.get(modifiedX, modifiedY, modifiedZ);
-                        if (islandX > 0) {
-                            double islandY = islandNoiseY.get(modifiedX, modifiedY, modifiedZ);
-                            if (islandY > 0) {
-                                double islandZ = islandNoiseZ.get(modifiedX, modifiedY, modifiedZ);
-                                if (islandZ > 0) {
-                                    groundNoise = (islandX + islandY + islandZ);
-                                    int factor = Math.abs(modifiedY - 16000);
-                                    groundNoise -= shrinkFactorEnd * factor;
-                                }
-                            }
-                        }
-
-                        if (groundNoise > 0) {
-                            cubePrimer.setBlockState(x, y, z, endstone);
-                        }
-                    }
-                }
-            }
-            return;
-        }
-
         BlockPos start = new BlockPos(cubeX * 4, cubeY * 2, cubeZ * 4);
         BlockPos end = start.add(4, 2, 4);
         IBlockState air = Blocks.AIR.getDefaultState();
+        IBlockState endstone = Blocks.END_STONE.getDefaultState();
+        Random random = new Random();
         this.forEachScaled(start, end, new Vec3i(4, 8, 4),
                 (x, y, z, dx, dy, dz, v) -> {
                     List<IBiomeBlockReplacer> replacers = biomeSource.getReplacers(x, y, z);
                     IBlockState block = Blocks.AIR.getDefaultState();
-                    int size = replacers.size();
-                    for (int i = 0; i < size; i++) {
-                        block = replacers.get(i).getReplacedBlock(block, x, y, z, dx, dy, dz, v);
+                    for (IBiomeBlockReplacer replacer : replacers) {
+                        block = replacer.getReplacedBlock(block, x, y, z, dx, dy, dz, v);
                     }
 
                     if (block != air) {
+                        if (cubeY > 875 && cubeY < 1125) {
+                            int difference = Math.abs(cubeY - 1000) * 16;
+                            cubePrimer.setBlockState(x & 0xf, y & 0xf, z & 0xf, random.nextInt(difference) < 128 ? endstone : block);
+                        }
+
                         cubePrimer.setBlockState(x & 0xf, y & 0xf, z & 0xf, block);
                     }
                 }
         );
     }
 
-    private static double shrinkFactor = 1 - 0.998409371;
-    private static double shrinkFactorEnd = 1 - 0.993409371;
-
     public double get(int x, int y, int z) {
-        if (y < 5000 && y > 0) {
-            double groundNoise = this.groundNoise.getValue(x, 0, z) * 256;
-            groundNoise = MathHelper.clamp((groundNoise - (y - 128)) / 200, -1, 1);
-            if (groundNoise < 1) {
-                double islandX = islandNoiseX.get(x, y, z);
-                if (islandX > 0) {
-                    double islandY = islandNoiseY.get(x, y, z);
-                    if (islandY > 0) {
-                        double islandZ = islandNoiseZ.get(x, y, z);
-                        if (islandZ > 0) {
-                            groundNoise = (islandX + islandY + islandZ) * 2.7;
-                        }
-                    }
+        double groundNoise = 0;
+        double islandX = islandNoiseX.get(x, y, z);
+        if (islandX > 0) {
+            double islandY = islandNoiseY.get(x, y, z);
+            if (islandY > 0) {
+                double islandZ = islandNoiseZ.get(x, y, z);
+                if (islandZ > 0) {
+                    groundNoise = (islandX + islandY + islandZ) * 1.3;
                 }
             }
-            if (groundNoise > 0) {
-                groundNoise -= y * shrinkFactor;
-            }
-
-            return groundNoise;
-        } else {
-            return 0;
         }
+
+        return groundNoise;
     }
 
     private void generateStructures(ICubePrimer cube, CubePos cubePos) {
@@ -276,13 +203,12 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         /*if (this.conf.caves) {
             this.caveGenerator.generate(world, cube, cubePos);
         }*/
-        if (this.conf.ravines) {
+        /*if (this.conf.ravines) {
             this.ravineGenerator.generate(world, cube, cubePos);
-        }
+        }*/
         if (this.conf.strongholds) {
             this.strongholds.generate(world, cube, cubePos);
         }
-
     }
 
     /**
@@ -451,7 +377,8 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
             if (cube.getY() >= 875 && cube.getY() <= 1125) {
                 double j = rand.nextDouble();
                 int cubeBottomY = cube.getCoords().getYCenter();
-                CHORUS: if (j > 0.9) {
+                CHORUS:
+                if (j > 0.9) {
                     BlockPos blockPos = new BlockPos(rand.nextInt(16) + cube.getCoords().getXCenter(), rand.nextInt(16) + cube.getCoords().getYCenter(), rand.nextInt(16) + cube.getCoords().getZCenter());
                     for (; blockPos.y >= cubeBottomY; blockPos.y--) {
                         if (world.getBlockState(blockPos).getBlock() == Blocks.END_STONE) {
@@ -459,7 +386,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                         }
                     }
 
-                    if (world.getBlockState(blockPos).getBlock() != Blocks.END_STONE)   {
+                    if (world.getBlockState(blockPos).getBlock() != Blocks.END_STONE) {
                         break CHORUS;
                     }
 
@@ -468,7 +395,8 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                 }
 
                 j = rand.nextDouble();
-                SHULKER: if (j > 0.99) {
+                SHULKER:
+                if (j > 0.99) {
                     BlockPos blockPos = new BlockPos(rand.nextInt(16) + cube.getCoords().getXCenter(), rand.nextInt(16) + cube.getCoords().getYCenter(), rand.nextInt(16) + cube.getCoords().getZCenter());
                     for (; blockPos.y > cubeBottomY; blockPos.y--) {
                         if (world.getBlockState(blockPos).getBlock() == Blocks.END_STONE) {
@@ -477,8 +405,7 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                     }
 
 
-
-                    if (world.getBlockState(blockPos).getBlock() != Blocks.END_STONE)   {
+                    if (world.getBlockState(blockPos).getBlock() != Blocks.END_STONE) {
                         break SHULKER;
                     }
 
