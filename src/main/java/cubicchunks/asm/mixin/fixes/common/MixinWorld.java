@@ -80,7 +80,7 @@ public abstract class MixinWorld implements ICubicWorld {
 
     @Inject(method = "Lnet/minecraft/world/World;getBiome(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/world/biome/Biome;", at = @At("HEAD"), cancellable = true)
     public void checkEnd(BlockPos pos, CallbackInfoReturnable<Biome> callbackInfoReturnable)    {
-        if (pos.y > 14000)  {
+        if (pos.y > 15700 && pos.y < 16300)  {
             callbackInfoReturnable.setReturnValue(Biomes.SKY);
         }
     }

@@ -280,7 +280,7 @@ public class CubeWorldEntitySpawner extends WorldEntitySpawner {
 
                     if (canCreatureTypeSpawnAtLocation(EntityLiving.SpawnPlacementType.ON_GROUND, (World) world, pos)) {
                         EntityLiving spawnedEntity;
-                        if (blockY > 14000)    {
+                        if (blockY > 15700 && blockY < 16300)    {
                             currEntry.entityClass = EntityEnderman.class;
                         }
 

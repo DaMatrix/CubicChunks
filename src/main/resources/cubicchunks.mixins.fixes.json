@@ -27,7 +27,6 @@
         "common.MixinPlayerList",
         "common.MixinWorldBorder",
         "common.MixinWorldEntitySpawner",
-        "common.MixinBlockBed",
         "common.MixinCommandKill",
         "common.MixinExtendedBlockStorage",
         "common.isblockloaded.MixinEntity",
