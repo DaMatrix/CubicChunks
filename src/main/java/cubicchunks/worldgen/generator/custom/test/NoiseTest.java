@@ -33,22 +33,10 @@ public class NoiseTest {
 
     public static void main(String... args) {
         IBuilder builder = NoiseSource.perlin()
-                .frequency(0.06)
-                .octaves(6)
-                .normalizeTo(-1, 1)
-                .seed(System.currentTimeMillis() * 2)
-                .create();
-        IBuilder builder1 = NoiseSource.perlin()
-                .frequency(0.06)
-                .octaves(6)
-                .normalizeTo(-1, 1)
-                .seed(System.currentTimeMillis() / 2)
-                .create();
-        IBuilder builder2 = NoiseSource.perlin()
-                .frequency(0.06)
-                .octaves(6)
-                .normalizeTo(-1, 1)
-                .seed(System.currentTimeMillis())
+                .seed(1 / 8)
+                .frequency(0.012)
+                .octaves(1)
+                .normalizeTo(-0.5, 1)
                 .create();
 
         boolean placeBlock;
@@ -59,15 +47,11 @@ public class NoiseTest {
                 int modifiedX = pos.x + x;
                 for (int y = 0; y < Cube.SIZE; y++) {
                     int modifiedY = pos.y + y;
-                    int factor = Math.abs(modifiedY);
-                    double acceptanceThreshold = factor * shrinkFactor;
                     for (int z = 0; z < Cube.SIZE; z++) {
                         placeBlock = true;
                         int modifiedZ = pos.z + z;
                         double islandX = builder.get(modifiedX, modifiedY, modifiedZ);
-                        double islandY = builder1.get(modifiedX, modifiedY, modifiedZ);
-                        double islandZ = builder2.get(modifiedX, modifiedY, modifiedZ);
-                        if (islandX + islandY + islandZ > acceptanceThreshold) {
+                        if (islandX < 0) {
                             placeBlock = false;
                         }
 

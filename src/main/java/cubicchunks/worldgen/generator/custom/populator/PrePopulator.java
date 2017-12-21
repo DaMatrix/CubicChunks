@@ -56,21 +56,16 @@ public class PrePopulator implements ICubicPopulator {
             }
         }
 
-        LAVA_LAKE: if (random.nextInt(cfg.lavaLakeRarity) == 0 && cfg.lavaLakes) {
+        LAVA_LAKE:
+        if (random.nextInt(cfg.lavaLakeRarity) == 0 && cfg.lavaLakes) {
             int yOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
-            int blockY = pos.getMinBlockY() + yOffset;
-            if (random.nextDouble() <= lavaLakeProbability(cfg, blockY)) {
-                int xOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
-                int zOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
-
-                if (blockY < cfg.waterLevel || random.nextInt(cfg.aboveSeaLavaLakeRarity) == 0) {
-                    BlockPos blockPos = pos.getMinBlockPos().add(xOffset, yOffset, zOffset);
-                    if (world.getBlockState(blockPos).getBlock() == Blocks.END_STONE)   {
-                        break LAVA_LAKE;
-                    }
-                    (new WorldGenLakes(Blocks.LAVA)).generate((World) world, random, blockPos);
-                }
+            int xOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
+            int zOffset = random.nextInt(Cube.SIZE) + Cube.SIZE / 2;
+            BlockPos blockPos = pos.getMinBlockPos().add(xOffset, yOffset, zOffset);
+            if (world.getBlockState(blockPos).getBlock() == Blocks.END_STONE) {
+                break LAVA_LAKE;
             }
+            (new WorldGenLakes(Blocks.LAVA)).generate((World) world, random, blockPos);
         }
 
         if (cfg.dungeons) {
@@ -81,17 +76,5 @@ public class PrePopulator implements ICubicPopulator {
                 }
             }
         }
-
-    }
-
-    private double lavaLakeProbability(CustomGeneratorSettings cfg, int y) {
-        // same as DefaultDecorator.waterSourceProbabilityForY
-        final double yScale = -0.0242676003062542;
-        final double yOffset = 0.723583275161355;
-        final double valueScale = 0.00599930877922822;
-
-        double normalizedY = (y - cfg.heightOffset) / cfg.heightFactor;
-        double vanillaY = normalizedY * 64 + 64;
-        return (Math.atan(vanillaY * yScale + yOffset) + Math.PI / 2) * valueScale;
     }
 }

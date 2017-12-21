@@ -57,7 +57,7 @@ public abstract class MixinBlockEndPortal {
 
         if (!worldIn.isRemote && !entityIn.isRiding() && !entityIn.isBeingRidden() && entityIn.isNonBoss() && entityIn.getEntityBoundingBox().intersects(state.getBoundingBox(worldIn, pos).offset(pos))) {
             BlockPos spawnPoint;
-            CHECK: if (entityIn.posY > 14000)  {
+            CHECK: if (entityIn.posY > 15700 && entityIn.posY < 16300)  {
                 if (entityIn instanceof EntityPlayer)   {
                     EntityPlayer player = (EntityPlayer) entityIn;
                         spawnPoint = player.getBedLocation();
