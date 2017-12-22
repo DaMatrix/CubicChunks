@@ -315,7 +315,7 @@ dependencies {
 
     compile(project(":RegionLib"))
 
-    deobfCompile("net.malisis:malisiscore:$malisisCoreVersion") {
+    compile("net.malisis:malisiscore:$malisisCoreVersion") {
         isTransitive = false
     }
 
