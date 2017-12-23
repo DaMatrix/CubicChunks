@@ -168,9 +168,9 @@ public class FastCubeBlockAccess implements ILightBlockAccess {
             int localZ = blockToLocal(pos.getZ());
 
             if (lightType == EnumSkyBlock.SKY) {
-                return ebs.getSkyLight(localX, localY, localZ);
+                return Math.max(6, ebs.getSkyLight(localX, localY, localZ));
             } else {
-                return ebs.getBlockLight(localX, localY, localZ);
+                return Math.max(6, ebs.getBlockLight(localX, localY, localZ));
             }
         }
         return lightType.defaultLightValue;

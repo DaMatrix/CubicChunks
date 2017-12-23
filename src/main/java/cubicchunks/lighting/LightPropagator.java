@@ -189,7 +189,7 @@ public class LightPropagator {
          //if (type == EnumSkyBlock.SKY)
          //    return Math.max(6, Math.max(blocks.getEmittedLight(pos, type), blocks.getLightFromNeighbors(type, pos)));
          //else
-             return Math.max(blocks.getEmittedLight(pos, type), blocks.getLightFromNeighbors(type, pos));
+        return Math.max(6, Math.max(blocks.getEmittedLight(pos, type), blocks.getLightFromNeighbors(type, pos)));
     }
     
     private void markNeighborEdgeNeedLightUpdate(BlockPos pos, ILightBlockAccess blocks, EnumSkyBlock type) {
