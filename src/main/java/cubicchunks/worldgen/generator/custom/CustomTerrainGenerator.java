@@ -83,17 +83,6 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     private final CustomGeneratorSettings conf;
     private final ChunkGeneratorEnd endChunkGenerator;
     private Perlin groundNoise;
-    private LoadingCache<Long, Integer> groundNoiseCache = CacheBuilder.<Long, Integer>newBuilder()
-            .expireAfterAccess(1, TimeUnit.MINUTES)
-            .maximumSize(512)
-            .build(new CacheLoader<Long, Integer>() {
-                @Override
-                public Integer load(Long key) {
-                    int x = (int) (key >> 32);
-                    int y = (int) (long) key;
-                    return (int) (groundNoise.getValue(x, y, 0) * 256);
-                }
-            });
     private IBuilder islandNoiseX;
     private IBuilder islandNoiseY;
     private IBuilder islandNoiseZ;
@@ -130,21 +119,21 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         islandNoiseX = NoiseSource.perlin()
                 .seed(seed)
                 .frequency(0.012)
-                .octaves(6)
+                .octaves(3)
                 .normalizeTo(-1, 1)
                 .create();
 
         islandNoiseY = NoiseSource.perlin()
                 .seed(seed / 2)
                 .frequency(0.05)
-                .octaves(6)
+                .octaves(3)
                 .normalizeTo(-1, 1)
                 .create();
 
         islandNoiseZ = NoiseSource.perlin()
                 .seed(seed / 4)
                 .frequency(0.012)
-                .octaves(6)
+                .octaves(3)
                 .normalizeTo(-1, 1)
                 .create();
     }
@@ -259,20 +248,24 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         );
     }
 
-    private static double shrinkFactor = 1 - 0.998809371;
+    private static double shrinkFactor = 1 - 0.998409371;
 
     public double get(int x, int y, int z) {
-        double groundNoise = groundNoiseCache.getUnchecked((((long) x) << 32) | (z & 0xffffffffL));
+        double groundNoise = this.groundNoise.getValue(x, 0, z) * 256;
         groundNoise = MathHelper.clamp((groundNoise - (y - 128)) / 200, -1, 1);
-        double islandX = islandNoiseX.get(x, y, z),
-                islandY = islandNoiseY.get(x, y, z),
-                islandZ = islandNoiseZ.get(x, y, z); //this works fine now
-
-        boolean shouldIsland = islandX > 0 && islandY > 0 && islandZ > 0;
-        if (shouldIsland) {
-            groundNoise = (islandX + islandY + islandZ);
+        if (groundNoise < 1) {
+            double islandX = islandNoiseX.get(x, y, z);
+            if (islandX > 0) {
+                double islandY = islandNoiseY.get(x, y, z);
+                if (islandY > 0) {
+                    double islandZ = islandNoiseZ.get(x, y, z);
+                    if (islandZ > 0) {
+                        groundNoise = (islandX + islandY + islandZ) * 2.7;
+                    }
+                }
+            }
         }
-        if (y > 0 && groundNoise > 0) {
+        if (groundNoise > 0) {
             groundNoise -= y * shrinkFactor;
         }
 
@@ -327,14 +320,14 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                 for (int sectionY = minY; sectionY < maxY; ++sectionY) {
                     int y = sectionY * yScale;
 
-                    final double v000 = this.get(x + xScale * 0, y + yScale * 0, z + zScale * 0);
-                    final double v001 = this.get(x + xScale * 0, y + yScale * 0, z + zScale * 1);
-                    final double v010 = this.get(x + xScale * 0, y + yScale * 1, z + zScale * 0);
-                    final double v011 = this.get(x + xScale * 0, y + yScale * 1, z + zScale * 1);
-                    final double v100 = this.get(x + xScale * 1, y + yScale * 0, z + zScale * 0);
-                    final double v101 = this.get(x + xScale * 1, y + yScale * 0, z + zScale * 1);
-                    final double v110 = this.get(x + xScale * 1, y + yScale * 1, z + zScale * 0);
-                    final double v111 = this.get(x + xScale * 1, y + yScale * 1, z + zScale * 1);
+                    final double v000 = this.get(x, y, z);
+                    final double v001 = this.get(x, y, z + zScale);
+                    final double v010 = this.get(x, y + yScale, z);
+                    final double v011 = this.get(x, y + yScale, z + zScale);
+                    final double v100 = this.get(x + xScale, y, z);
+                    final double v101 = this.get(x + xScale, y, z + zScale);
+                    final double v110 = this.get(x + xScale, y + yScale, z);
+                    final double v111 = this.get(x + xScale, y + yScale, z + zScale);
 
                     double v0y0 = v000;
                     double v0y1 = v001;

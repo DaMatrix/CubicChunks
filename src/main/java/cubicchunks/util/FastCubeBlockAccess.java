@@ -124,7 +124,7 @@ public class FastCubeBlockAccess implements ILightBlockAccess {
         int cubeY = Coords.blockToCube(blockY);
         int cubeZ = Coords.blockToCube(blockZ);
 
-        this.cache[cubeX - originX][cubeY - originY][cubeZ - originZ] = ebs;
+        this.cache[blockX - originX][blockY - originY][blockZ - originZ] = ebs;
     }
 
     @Nullable

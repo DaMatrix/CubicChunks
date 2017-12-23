@@ -107,10 +107,12 @@ public class LightPropagator {
                         continue;
                     }
                     setLightCallback.accept(pos);
+
                     // if no distance left - stop spreading, so that it won't run into problems when updating too much
                     if (distance <= MIN_DISTANCE) {
                         continue;
                     }
+
                     // add all neighbors even those already checked - the check above will fail for them
                     // because currentValue-1 == -1 (already checked are set to 0)
                     // and min. possible lightFromNeighbors is 0
@@ -184,7 +186,10 @@ public class LightPropagator {
     }
 
     private int getExpectedLight(ILightBlockAccess blocks, EnumSkyBlock type, BlockPos pos) {
-        return Math.max(blocks.getEmittedLight(pos, type), blocks.getLightFromNeighbors(type, pos));
+         //if (type == EnumSkyBlock.SKY)
+         //    return Math.max(6, Math.max(blocks.getEmittedLight(pos, type), blocks.getLightFromNeighbors(type, pos)));
+         //else
+             return Math.max(blocks.getEmittedLight(pos, type), blocks.getLightFromNeighbors(type, pos));
     }
     
     private void markNeighborEdgeNeedLightUpdate(BlockPos pos, ILightBlockAccess blocks, EnumSkyBlock type) {

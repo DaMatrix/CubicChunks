@@ -58,6 +58,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import team.pepsi.ccaddon.PorkMethods;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -282,5 +283,5 @@ public abstract class MixinWorldServer extends MixinWorld implements ICubicWorld
         this.worldInfo.setSpawn(addon_forcedSpawn);
     }
 
-    public BlockPos addon_forcedSpawn = new BlockPos(0, 64, 128);
+    public BlockPos addon_forcedSpawn = new BlockPos(0, PorkMethods.overworldSpawnOffset, 128);
 }

@@ -39,7 +39,7 @@ class LightUpdateQueue {
     /**
      * Enables additional error checks. Can be disable if performance becomes an issue.
      */
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     // there is some redundant arithmetic, but it's there so the pattern is easily visible
     private static final int QUEUE_PART_SIZE = 64 * 1024;
@@ -62,7 +62,7 @@ class LightUpdateQueue {
      */
     static final int MAX_POS = Bits.getMaxSigned(POS_BITS);
     //note: value is unsigned
-    static final int MIN_VALUE = 0;
+    static final int MIN_VALUE = 5;
     static final int MAX_VALUE = Bits.getMaxUnsigned(VALUE_BITS);
     static final int MIN_DISTANCE = 0;
     static final int MAX_DISTANCE = Bits.getMaxUnsigned(DISTANCE_BITS);
@@ -133,7 +133,7 @@ class LightUpdateQueue {
     }
 
     void put(BlockPos pos, int value, int distance) {
-        put(pos.getX(), pos.getY(), pos.getZ(), value, distance);
+        put(pos.x, pos.y, pos.z, value, distance);
     }
 
     void put(int x, int y, int z, int value, int distance) {

@@ -189,9 +189,12 @@ public class FirstLightProcessor {
 
         List<BlockPos> toUpdate = new ArrayList<>();
 
+        int maxCubePos = cube.getY() + 2;
+        int minCubePos = cube.getY() - 2;
+
         IColumn IColumn = cube.getColumn();
         // Iterate over all affected cubes.
-        Iterable<Cube> cubes = IColumn.getLoadedCubes(blockToCube(maxMaxHeight), blockToCube(minMinHeight));
+        Iterable<Cube> cubes = IColumn.getLoadedCubes(Math.min(blockToCube(maxMaxHeight), maxCubePos), Math.max(minCubePos, blockToCube(minMinHeight)));
         for (Cube otherCube : cubes) {
             int minCubeBlockY = otherCube.getCoords().getMinBlockY();
             int maxCubeBlockY = otherCube.getCoords().getMaxBlockY();
@@ -214,7 +217,7 @@ public class FirstLightProcessor {
                     }
 
                     this.mutablePos.setPos(blockX, this.mutablePos.getY(), blockZ);
-                    int topBlockY = getOcclusionHeight(IColumn, blockToLocal(blockX), blockToLocal(blockZ));
+                    int topBlockY = getOcclusionHeight(IColumn, blockToLocal(blockX), blockToLocal(blockZ), cube.getY() * 16);
 
                     if (otherCube != cube && canStopUpdating(cube, this.mutablePos, topBlockY)) {
                         // mark this column so min > max
@@ -360,8 +363,8 @@ public class FirstLightProcessor {
      * @return the y-coordinate of the highest occluding block in the specified block column or {@link
      * cubicchunks.util.Coords#NO_HEIGHT} if no such block exists
      */
-    private static int getOcclusionHeight(@Nonnull IColumn IColumn, int localX, int localZ) {
-        return IColumn.getOpacityIndex().getTopBlockY(localX, localZ);
+    private static int getOcclusionHeight(@Nonnull IColumn IColumn, int localX, int localZ, int localY) {
+        return Math.min(IColumn.getOpacityIndex().getTopBlockY(localX, localZ), localY + 48);
     }
 
     /**
@@ -379,7 +382,7 @@ public class FirstLightProcessor {
      */
     private static int getOcclusionHeightBelowCubeY(@Nonnull IColumn IColumn, int blockX, int blockZ, int cubeY) {
         IHeightMap index = IColumn.getOpacityIndex();
-        return index.getTopBlockYBelow(blockToLocal(blockX), blockToLocal(blockZ), cubeToMinBlock(cubeY));
+        return Math.max(cubeY * 16 - 32, index.getTopBlockYBelow(blockToLocal(blockX), blockToLocal(blockZ), cubeToMinBlock(cubeY)));
     }
 
     /**
@@ -396,7 +399,7 @@ public class FirstLightProcessor {
     private static ImmutablePair<Integer, Integer> getMinMaxLightUpdateY(@Nonnull Cube cube, int localX, int localZ) {
 
         IColumn IColumn = cube.getColumn();
-        int heightMax = getOcclusionHeight(IColumn, localX, localZ);//==Y of the top block
+        int heightMax = getOcclusionHeight(IColumn, localX, localZ, cube.getY() * 16);//==Y of the top block
 
         // If the given cube is above the highest occluding block in the column, everything is fully lit.
         int cubeY = cube.getY();
