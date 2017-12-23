@@ -21,28 +21,24 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package cubicchunks.asm.mixin.fixes.common;
+package cubicchunks.asm.mixin.fixes.client;
 
-import net.minecraft.world.border.WorldBorder;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import team.pepsi.ccaddon.PorkMethods;
+import org.spongepowered.asm.mixin.Overwrite;
 
-@Mixin(WorldBorder.class)
-public abstract class MixinWorldBorder {
-    @Inject(method = "maxZ", at = @At("HEAD"), cancellable = true)
-    public void preMax(CallbackInfoReturnable<Double> callbackInfoReturnable) {
-        if (PorkMethods.isDedicatedServer)  {
-            callbackInfoReturnable.setReturnValue(256d);
-        }
-    }
+import javax.annotation.Nullable;
 
-    @Inject(method = "minZ", at = @At("HEAD"), cancellable = true)
-    public void preMin(CallbackInfoReturnable<Double> callbackInfoReturnable) {
-        if (PorkMethods.isDedicatedServer)  {
-            callbackInfoReturnable.setReturnValue(0d);
-        }
+@Mixin(EntityPlayer.class)
+public abstract class MixinEntityPlayer {
+    /**
+     * asdf
+     *
+     * @author xd
+     */
+    @Overwrite
+    private void playShoulderEntityAmbientSound(@Nullable NBTTagCompound p_192028_1_) {
+        //Disable because it's causing an NPE
     }
 }

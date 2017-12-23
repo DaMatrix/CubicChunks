@@ -225,7 +225,7 @@ public abstract class MixinWorld implements ICubicWorld {
     
     @Inject(method = "getBlockState", at = @At("HEAD"), cancellable = true)
     public void getBlockState(BlockPos pos, CallbackInfoReturnable<IBlockState> ci) {
-        if (PorkMethods.isCubeOutOfBounds(pos.z >> 4))  {
+        if (!isRemote && PorkMethods.isCubeOutOfBounds(pos.z >> 4))  {
             ci.setReturnValue(Blocks.BARRIER.getDefaultState());
             return;
         }

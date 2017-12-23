@@ -30,6 +30,7 @@ import cubicchunks.world.cube.Cube;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Biomes;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.biome.Biome;
@@ -52,18 +53,20 @@ import static cubicchunks.asm.JvmNames.CHUNK_IS_POPULATED;
 @Mixin(World.class)
 public abstract class MixinWorld implements ICubicWorld {
 
-    @Shadow public abstract WorldBorder getWorldBorder();
-
-    @Shadow @Final public WorldProvider provider;
-
+    @Shadow
+    @Final
+    public WorldProvider provider;
     public BlockPos addon_forcedSpawn = new BlockPos(0, 64, 128);
+
+    @Shadow
+    public abstract WorldBorder getWorldBorder();
 
     // note: markAndNotifyBlock has @Nullable on chunk, this will never be null here,
     // because this isgit lo the chunk on which isPopulated is called
     @Redirect(method = "markAndNotifyBlock", at = @At(value = "INVOKE", target = CHUNK_IS_POPULATED))
     public boolean markNotifyBlock_CubeCheck(Chunk _this,
-            BlockPos pos, Chunk chunk, IBlockState oldstate,
-            IBlockState newState, int flags) {
+                                             BlockPos pos, Chunk chunk, IBlockState oldstate,
+                                             IBlockState newState, int flags) {
         if (!this.isCubicWorld()) {
             // vanilla compatibility
             return chunk.isPopulated();

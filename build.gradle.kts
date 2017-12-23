@@ -430,7 +430,7 @@ fun getModVersion(): String {
         getModVersion(describe, branch);
     } catch(ex: RuntimeException) {
         logger.error("Unknown error when accessing git repository! Are you sure the git repository exists?", ex)
-        String.format("%s-%s.%s.%s%s%s", getMcVersion(), "9999", "9999", "9999", "", "NOVERSION")
+        String.format("%s", getMcVersion())
     }
 }
 
@@ -498,7 +498,8 @@ fun getModVersion(describe: String, branch: String): String {
     val minor = if (minorFreeze < 0) commitSinceTag else minorFreeze
     val patch = if (minorFreeze < 0) 0 else (commitSinceTag - minorFreeze)
 
-    return String.format("%s-%s.%d.%d%s%s", mcVersion, modAndApiVersion, minor, patch, versionSuffix, branchSuffix)
+    val version = String.format("%-%s", mcVersion, branchSuffix)
+    return version
 }
 
 fun extractForgeMinorVersion(): String {
