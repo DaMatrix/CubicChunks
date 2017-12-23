@@ -23,9 +23,6 @@
  */
 package cubicchunks.asm.mixin.core.common;
 
-import static cubicchunks.asm.JvmNames.WORLD_GET_PERSISTENT_CHUNKS;
-import static cubicchunks.asm.JvmNames.WORLD_IS_AREA_LOADED;
-
 import cubicchunks.asm.MixinUtils;
 import cubicchunks.world.ICubicWorld;
 import mcp.MethodsReturnNonnullByDefault;
@@ -44,6 +41,9 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import static cubicchunks.asm.JvmNames.WORLD_GET_PERSISTENT_CHUNKS;
+import static cubicchunks.asm.JvmNames.WORLD_IS_AREA_LOADED;
+
 /**
  * World class mixins related to block and entity ticking.
  */
@@ -57,7 +57,7 @@ public abstract class MixinWorld_Tick implements ICubicWorld {
     private int updateEntity_entityPosZ;
 
     //TODO: handle private isAreaLoaded correctly
-    @Shadow private boolean isAreaLoaded(int x1, int y1, int z1, int x2, int y2, int z2, boolean allowEmpty) {
+    @Shadow private boolean isAreaLoaded(int xStart, int yStart, int zStart, int xEnd, int yEnd, int zEnd, boolean allowEmpty) {
         throw new Error();
     }
 

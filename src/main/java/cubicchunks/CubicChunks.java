@@ -23,58 +23,25 @@
  */
 package cubicchunks;
 
-import static cubicchunks.api.worldgen.biome.CubicBiome.oceanWaterReplacer;
-import static cubicchunks.api.worldgen.biome.CubicBiome.surfaceDefaultReplacer;
-import static cubicchunks.api.worldgen.biome.CubicBiome.terrainShapeReplacer;
-
-import cubicchunks.debug.DebugTools;
+import cubicchunks.api.worldgen.biome.CubicBiome;
 import cubicchunks.debug.DebugWorldType;
 import cubicchunks.network.PacketDispatcher;
 import cubicchunks.proxy.CommonProxy;
-import cubicchunks.server.chunkio.async.forge.AsyncWorldIOExecutor;
 import cubicchunks.world.type.CustomCubicWorldType;
 import cubicchunks.world.type.FlatCubicWorldType;
 import cubicchunks.world.type.VanillaCubicWorldType;
 import cubicchunks.worldgen.generator.CubeGeneratorsRegistry;
-import cubicchunks.api.worldgen.biome.CubicBiome;
 import cubicchunks.worldgen.generator.custom.ConversionUtils;
 import cubicchunks.worldgen.generator.custom.biome.replacer.MesaSurfaceReplacer;
 import cubicchunks.worldgen.generator.custom.biome.replacer.MutatedSavannaSurfaceReplacer;
 import cubicchunks.worldgen.generator.custom.biome.replacer.SwampWaterWithLilypadReplacer;
 import cubicchunks.worldgen.generator.custom.biome.replacer.TaigaSurfaceReplacer;
-import cubicchunks.worldgen.generator.custom.populator.DefaultDecorator;
-import cubicchunks.worldgen.generator.custom.populator.DesertDecorator;
-import cubicchunks.worldgen.generator.custom.populator.ForestDecorator;
-import cubicchunks.worldgen.generator.custom.populator.HillsDecorator;
-import cubicchunks.worldgen.generator.custom.populator.JungleDecorator;
-import cubicchunks.worldgen.generator.custom.populator.MesaDecorator;
-import cubicchunks.worldgen.generator.custom.populator.PlainsDecorator;
-import cubicchunks.worldgen.generator.custom.populator.SavannaDecorator;
-import cubicchunks.worldgen.generator.custom.populator.SnowBiomeDecorator;
-import cubicchunks.worldgen.generator.custom.populator.SwampDecorator;
-import cubicchunks.worldgen.generator.custom.populator.TaigaDecorator;
+import cubicchunks.worldgen.generator.custom.populator.*;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeBeach;
-import net.minecraft.world.biome.BiomeDesert;
-import net.minecraft.world.biome.BiomeForest;
-import net.minecraft.world.biome.BiomeForestMutated;
-import net.minecraft.world.biome.BiomeHills;
-import net.minecraft.world.biome.BiomeJungle;
-import net.minecraft.world.biome.BiomeMesa;
-import net.minecraft.world.biome.BiomeMushroomIsland;
-import net.minecraft.world.biome.BiomeOcean;
-import net.minecraft.world.biome.BiomePlains;
-import net.minecraft.world.biome.BiomeRiver;
-import net.minecraft.world.biome.BiomeSavanna;
-import net.minecraft.world.biome.BiomeSavannaMutated;
-import net.minecraft.world.biome.BiomeSnow;
-import net.minecraft.world.biome.BiomeStoneBeach;
-import net.minecraft.world.biome.BiomeSwamp;
-import net.minecraft.world.biome.BiomeTaiga;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraft.world.biome.*;
+import net.minecraft.world.storage.loot.LootTableList;
 import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.RegistryEvent;
@@ -100,15 +67,17 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
+import static cubicchunks.api.worldgen.biome.CubicBiome.oceanWaterReplacer;
+import static cubicchunks.api.worldgen.biome.CubicBiome.terrainShapeReplacer;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -233,6 +202,7 @@ public class CubicChunks {
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent e) {
+        LootTableList.register(new ResourceLocation("cubicchunks", "dungeon"));
         LOGGER = e.getModLog();
         ConversionUtils.initFlowNoiseHack();
 
