@@ -293,10 +293,14 @@ repositories {
     maven {
         setUrl("http://repo.spongepowered.org/maven")
     }
+    maven {
+        setUrl("https://mod-buildcraft.com/maven/")
+    }
 }
 
 dependencies {
     compile("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
+    compile("com.mod-buildcraft:buildcraft-api:7.99.12")
     // https://mvnrepository.com/artifact/com.typesafe/config
     compile("com.typesafe:config:1.2.0")
     testCompile("junit:junit:4.11")
