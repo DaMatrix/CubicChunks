@@ -66,6 +66,7 @@ apply {
 val build by tasks
 val jar: Jar by tasks
 val shadowJar: ShadowJar by tasks
+val javadoc: Javadoc by tasks
 val test: Test by tasks
 val processResources: ProcessResources by tasks
 val deobfMcSRG: DeobfuscateJar by tasks
@@ -121,8 +122,7 @@ minecraft {
     isUseDepAts = true
 
     replace("@@VERSION@@", project.version)
-    replace("/*@@DEPS_PLACEHOLDER@@*/",
-            ",dependencies = \"after:forge@[13.20.1.2454,);after:malisiscore@[$malisisCoreMinVersion,)\"")
+    replace("\"/*@@DEPS_PLACEHOLDER@@*/", ";after:malisiscore@[$malisisCoreMinVersion,)\"")
     replace("@@MALISIS_VERSION@@", malisisCoreMinVersion)
     replaceIn("cubicchunks/CubicChunks.java")
 
@@ -163,9 +163,6 @@ reobf {
     create("shadowJar").apply {
         mappingType = ReobfMappingType.SEARGE
     }
-    create("coreJar").apply {
-        mappingType = ReobfMappingType.SEARGE
-    }
 }
 build.dependsOn("reobfShadowJar")
 
@@ -186,7 +183,9 @@ jmh {
     jmhVersion = "1.17.1"
 }
 
-
+javadoc.apply {
+    (options as StandardJavadocDocletOptions).tags = listOf("reason")
+}
 val javadocJar by tasks.creating(Jar::class) {
     classifier = "javadoc"
     from(tasks["javadoc"])
@@ -195,7 +194,6 @@ val sourcesJar by tasks.creating(Jar::class) {
     classifier = "sources"
     from(sourceSets["main"].java.srcDirs)
 }
-
 
 // based on:
 // https://github.com/Ordinastie/MalisisCore/blob/30d8efcfd047ac9e9bc75dfb76642bd5977f0305/build.gradle#L204-L256
@@ -273,7 +271,7 @@ uploadArchives.apply {
 // tasks must be before artifacts, don't change the order
 artifacts {
     withGroovyBuilder {
-        "archives"(tasks["jar"], sourcesJar, javadocJar)
+        "archives"(shadowJar, sourcesJar, javadocJar)
     }
 }
 
@@ -298,52 +296,58 @@ repositories {
     }
 }
 
+// configurations, needed for extendsFrom
+val jmh by configurations
+val forgeGradleMc by configurations
+val forgeGradleMcDeps by configurations
+val forgeGradleGradleStart by configurations
+val compile by configurations
+val testCompile by configurations
+
+val embed by configurations.creating
+val coreShadow by configurations.creating
+
+jmh.extendsFrom(compile)
+jmh.extendsFrom(forgeGradleMc)
+jmh.extendsFrom(forgeGradleMcDeps)
+testCompile.extendsFrom(forgeGradleGradleStart)
+testCompile.extendsFrom(forgeGradleMcDeps)
+compile.extendsFrom(embed)
+compile.extendsFrom(coreShadow)
+
+// this is needed because it.ozimov:java7-hamcrest-matchers:0.7.0 depends on guava 19, while MC needs guava 21
+configurations.all { resolutionStrategy { force("com.google.guava:guava:21.0") } }
+
 dependencies {
-    compile("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
+    embed("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
     compile("com.mod-buildcraft:buildcraft-api:7.99.12")
     // https://mvnrepository.com/artifact/com.typesafe/config
-    compile("com.typesafe:config:1.2.0")
+    embed("com.typesafe:config:1.2.0")
     testCompile("junit:junit:4.11")
     testCompile("org.hamcrest:hamcrest-junit:2.0.0.0")
     testCompile("it.ozimov:java7-hamcrest-matchers:0.7.0")
     testCompile("org.mockito:mockito-core:2.1.0-RC.2")
     testCompile("org.spongepowered:launchwrappertestsuite:1.0-SNAPSHOT")
 
-    compile("org.spongepowered:mixin:0.7.5-SNAPSHOT") {
+    coreShadow("org.spongepowered:mixin:0.7.5-SNAPSHOT") {
         isTransitive = false
     }
 
-    compile(project(":RegionLib"))
+    embed("io.github.opencubicchunks:regionlib:0.44.0-SNAPSHOT")
 
     deobfCompile("net.malisis:malisiscore:$malisisCoreVersion") {
         isTransitive = false
     }
-
-    // configurations, needed for extendsFrom
-    val jmh by configurations
-    val forgeGradleMc by configurations
-    val forgeGradleMcDeps by configurations
-    val forgeGradleGradleStart by configurations
-    val compile by configurations
-    val testCompile by configurations
-
-    jmh.extendsFrom(compile)
-    jmh.extendsFrom(forgeGradleMc)
-    jmh.extendsFrom(forgeGradleMcDeps)
-    testCompile.extendsFrom(forgeGradleGradleStart)
-    testCompile.extendsFrom(forgeGradleMcDeps)
 }
 
-// this is needed because it.ozimov:java7-hamcrest-matchers:0.7.0 depends on guava 19, while MC needs guava 21
-configurations.all { resolutionStrategy { force("com.google.guava:guava:21.0") } }
-
-
+// TODO: coremod dependency extraction
+/*
 // modified version of https://github.com/PaleoCrafter/Dependency-Extraction-Example/blob/coremod-separation/build.gradle
 tasks {
-    "coreJar"(org.gradle.api.tasks.bundling.Jar::class) {
+    "coreJar"(ShadowJar::class) {
         // need FQN because ForgeGradle needs this exact class and default imports use different one
         from(mainSourceSet.output) {
-            include("cubicchunks/asm/**")
+            include("cubicchunks/asm/**", "**.json")
         }
         // Standard coremod manifest definitions
         manifest {
@@ -354,31 +358,37 @@ tasks {
             // Strictly speaking not required (right now)
             // Allows Forge to extract the dependency to a local repository (Given that the corresponding PR is merged)
             // If another mod ships the same dependency, it doesn't have to be extracted twice
+            println("${project.group}:${project.base.archivesBaseName}:${project.version}:core")
             attributes["Maven-Version"] = "${project.group}:${project.base.archivesBaseName}:${project.version}:core"
         }
+        configurations = listOf(coreShadow)
         classifier = "core"
     }
-}
+}*/*/
+
 jar.apply {
-    val coreJar: Jar by tasks
+    exclude("LICENSE.txt", "log4j2.xml")
+    // TODO: https://github.com/johnrengelman/shadow/issues/355
+    //into("/") {
+    //    from(embed)
+    //}
 
-    exclude("cubicchunks/asm/**")
-
-    // Add the output of the coremod JAR task to the main JAR for later extraction
-    from(coreJar.archivePath.absolutePath) {
-        include("*") // Due to the way Gradle's copy tasks work, we need this line for the JAR to get added
-    }
-    manifest {
-        // The crucial manifest attribute: Make Forge extract the contained JAR
-        attributes["ContainedDeps"] = coreJar.archivePath.name
-    }
-    // Only run the main jar task after the coremod JAR was completely built
-    dependsOn("reobfCoreJar")
+    manifest.attributes["FMLAT"] = "cubicchunks_at.cfg"
+    manifest.attributes["FMLCorePlugin"] = "cubicchunks.asm.CubicChunksCoreMod"
+    manifest.attributes["TweakClass"] = "org.spongepowered.asm.launch.MixinTweaker"
+    manifest.attributes["TweakOrder"] = "0"
+    manifest.attributes["ForceLoadAsMod"] = "true"
+    //manifest.attributes["ContainedDeps"] =
+    //        (embed.files.stream().map { x -> x.name }.reduce { x, y -> x + " " + y }).get()// + " " + coreJar.archivePath.name
 }
 
 shadowJar.apply {
-    relocate("com.flowpowered", "cubicchunks.com.flowpowered")
+    configurations = listOf(coreShadow)
     exclude("log4j2.xml")
+    into("/") {
+        from(embed)
+    }
+
     classifier = "all"
 }
 
