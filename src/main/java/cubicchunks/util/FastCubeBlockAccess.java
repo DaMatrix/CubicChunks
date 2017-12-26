@@ -120,9 +120,9 @@ public class FastCubeBlockAccess implements ILightBlockAccess {
     }
 
     private void setStorage(int blockX, int blockY, int blockZ, @Nullable ExtendedBlockStorage ebs) {
-        int cubeX = Coords.blockToCube(blockX);
-        int cubeY = Coords.blockToCube(blockY);
-        int cubeZ = Coords.blockToCube(blockZ);
+        blockX = Coords.blockToCube(blockX);
+        blockY = Coords.blockToCube(blockY);
+        blockZ = Coords.blockToCube(blockZ);
 
         this.cache[blockX - originX][blockY - originY][blockZ - originZ] = ebs;
     }
