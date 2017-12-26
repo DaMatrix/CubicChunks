@@ -43,7 +43,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class PorkMethods {
     public static boolean isDedicatedServer = false;
     public static boolean isForgeSever = false;
-    public static int overworldSpawnOffset = 320;
+    public static int overworldSpawnOffset = 256;
 
     /**
      * Gets a safe place to spawn in the given radii, centered around the blockpos.

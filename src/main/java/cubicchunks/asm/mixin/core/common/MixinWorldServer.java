@@ -123,6 +123,7 @@ public abstract class MixinWorldServer extends MixinWorld implements ICubicWorld
         if (!this.isCubicWorld()) {
             throw new NotCubicChunksWorldException();
         }
+
         assert chunkGc != null;
         this.chunkGc.tick();
     }
