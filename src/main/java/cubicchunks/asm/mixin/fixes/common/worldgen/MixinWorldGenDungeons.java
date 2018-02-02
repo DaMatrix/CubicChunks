@@ -25,24 +25,20 @@ package cubicchunks.asm.mixin.fixes.common.worldgen;
 
 import cubicchunks.world.ICubicWorld;
 import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.material.Material;
-import net.minecraft.init.Blocks;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityChest;
-import net.minecraft.tileentity.TileEntityMobSpawner;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.entity.EntityList;
+import net.minecraft.entity.monster.EntityGuardian;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenDungeons;
-import net.minecraft.world.storage.loot.LootTableList;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Random;
@@ -65,5 +61,16 @@ public abstract class MixinWorldGenDungeons {
             ordinal = 3))
     private int getMinHeight(int orig, World worldIn, Random rand, BlockPos position) {
         return ((ICubicWorld) worldIn).getMinHeight();
+    }
+
+    @Redirect(method = "generate",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/world/gen/feature/WorldGenDungeons;pickMobSpawner(Ljava/util/Random;)Lnet/minecraft/util/ResourceLocation;"))
+    public ResourceLocation betterSpawnerPick(WorldGenDungeons dungeons, Random random, World worldIn, Random rand, BlockPos position) {
+        if (position.getY() < -2000 && random.nextDouble() < 0.05d)    {
+            return EntityList.getKey(EntityGuardian.class);
+        }
+
+        return net.minecraftforge.common.DungeonHooks.getRandomDungeonMob(rand);
     }
 }
