@@ -547,7 +547,7 @@ public class Cube implements XYZAddressable {
         return this.storage = ebs;
     }
 
-    private void newStorage() {
+    public void newStorage() {
         storage = new ExtendedBlockStorage(cubeToMinBlock(getY()), world.getProvider().hasSkyLight());
     }
 

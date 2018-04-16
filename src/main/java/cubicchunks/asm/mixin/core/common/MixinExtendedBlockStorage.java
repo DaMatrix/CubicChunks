@@ -21,45 +21,54 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package cubicchunks.worldgen.generator;
+package cubicchunks.asm.mixin.core.common;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+/**
+ * @author DaPorkchop_
+ */
+@Mixin(ExtendedBlockStorage.class)
+public abstract class MixinExtendedBlockStorage {
+    /**
+     * jeff
+     *
+     * @author daporkchop
+     */
+    @Overwrite
+    public void setSkyLight(int x, int y, int z, int v) {
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-public interface ICubePrimer {
-
-    IBlockState DEFAULT_STATE = Blocks.AIR.getDefaultState();
+    }
 
     /**
-     * Get the block state at the given location
+     * jeff
      *
-     * @param x cube local x
-     * @param y cube local y
-     * @param z cube local z
-     *
-     * @return the block state
+     * @author daporkchop
      */
-    IBlockState getBlockState(int x, int y, int z);
+    @Overwrite
+    public void setBlockLight(int x, int y, int z, int v) {
+
+    }
 
     /**
-     * Set the block state at the given location
+     * jeff
      *
-     * @param x cube local x
-     * @param y cube local y
-     * @param z cube local z
-     * @param state the block state
+     * @author daporkchop
      */
-    void setBlockState(int x, int y, int z, IBlockState state);
+    @Overwrite
+    public int getSkyLight(int x, int y, int z) {
+        return 15;
+    }
 
     /**
-     * Fills the primer with a given block state
+     * jeff
      *
-     * @param state the block state
+     * @author daporkchop
      */
-    void fill(IBlockState state);
+    @Overwrite
+    public int getBlockLight(int x, int y, int z) {
+        return 15;
+    }
 }

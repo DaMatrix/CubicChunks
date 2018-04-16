@@ -23,10 +23,6 @@
  */
 package cubicchunks.worldgen.generator.custom;
 
-import static cubicchunks.util.Coords.blockToLocal;
-import static cubicchunks.worldgen.generator.custom.builder.IBuilder.NEGATIVE;
-import static cubicchunks.worldgen.generator.custom.builder.IBuilder.POSITIVE;
-
 import cubicchunks.CubicChunks;
 import cubicchunks.api.worldgen.biome.CubicBiome;
 import cubicchunks.api.worldgen.populator.CubePopulatorEvent;
@@ -49,25 +45,28 @@ import cubicchunks.worldgen.generator.custom.structure.CubicRavineGenerator;
 import cubicchunks.worldgen.generator.custom.structure.CubicStructureGenerator;
 import cubicchunks.worldgen.generator.custom.structure.feature.CubicFeatureGenerator;
 import cubicchunks.worldgen.generator.custom.structure.feature.CubicStrongholdGenerator;
+import it.unimi.dsi.fastutil.chars.Char2ObjectMap;
+import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.relauncher.Side;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.lwjgl.input.Keyboard;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.Random;
 import java.util.function.ToIntFunction;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
+import static cubicchunks.util.Coords.blockToLocal;
+import static cubicchunks.worldgen.generator.custom.builder.IBuilder.NEGATIVE;
+import static cubicchunks.worldgen.generator.custom.builder.IBuilder.POSITIVE;
 
 /**
  * A terrain generator that supports infinite(*) worlds
@@ -80,15 +79,88 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
     private static final int CACHE_SIZE_3D = 16 * 16 * 16;
     private static final ToIntFunction<Vec3i> HASH_2D = (v) -> v.getX() + v.getZ() * 5;
     private static final ToIntFunction<Vec3i> HASH_3D = (v) -> v.getX() + v.getZ() * 5 + v.getY() * 25;
-    // Number of octaves for the noise function
-    private IBuilder terrainBuilder;
+    private static final Char2ObjectMap<boolean[][]> numbers = new Char2ObjectOpenHashMap<>();
+
+    static {
+        putMap('0',
+                "###",
+                "# #",
+                "# #",
+                "# #",
+                "###");
+        putMap('1',
+                " # ",
+                "## ",
+                " # ",
+                " # ",
+                "###");
+        putMap('2',
+                " # ",
+                "# #",
+                "  #",
+                " # ",
+                "###");
+        putMap('3',
+                "## ",
+                "  #",
+                " ##",
+                "  #",
+                "## ");
+        putMap('4',
+                "# #",
+                "# #",
+                "###",
+                "  #",
+                "  #");
+        putMap('5',
+                "###",
+                "#  ",
+                "###",
+                "  #",
+                "###");
+        putMap('6',
+                "#  ",
+                "#  ",
+                "###",
+                "# #",
+                "###");
+        putMap('7',
+                "###",
+                "  #",
+                "  #",
+                "  #",
+                "  #");
+        putMap('8',
+                "###",
+                "# #",
+                "###",
+                "# #",
+                "###");
+        putMap('9',
+                "###",
+                "# #",
+                "###",
+                "  #",
+                "  #");
+        putMap('-',
+                "   ",
+                "   ",
+                "###",
+                "   ",
+                "   ");
+    }
+
     private final BiomeSource biomeSource;
     private final CustomGeneratorSettings conf;
-
+    // Number of octaves for the noise function
+    private IBuilder terrainBuilder;
     //TODO: Implement more structures
-    @Nonnull private CubicCaveGenerator caveGenerator = new CubicCaveGenerator();
-    @Nonnull private CubicStructureGenerator ravineGenerator = new CubicRavineGenerator();
-    @Nonnull private CubicFeatureGenerator strongholds;
+    @Nonnull
+    private CubicCaveGenerator caveGenerator = new CubicCaveGenerator();
+    @Nonnull
+    private CubicStructureGenerator ravineGenerator = new CubicRavineGenerator();
+    @Nonnull
+    private CubicFeatureGenerator strongholds;
 
     public CustomTerrainGenerator(ICubicWorld world, final long seed) {
         super(world);
@@ -100,6 +172,16 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
 
         this.biomeSource = new BiomeSource(world, conf.createBiomeBlockReplacerConfig(), world.getBiomeProvider(), 2);
         initGenerator(seed);
+    }
+
+    private static void putMap(char c, String... s) {
+        boolean[][] b = new boolean[3][5];
+        for (int x = 0; x < 3; x++) {
+            for (int z = 0; z < 5; z++) {
+                b[x][z] = s[z].charAt(x) == '#';
+            }
+        }
+        numbers.put(c, b);
     }
 
     private void initGenerator(long seed) {
@@ -157,14 +239,55 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                 .cached(CACHE_SIZE_3D, HASH_3D);
     }
 
-    @Override public ICubePrimer generateCube(int cubeX, int cubeY, int cubeZ) {
+    @Override
+    public ICubePrimer generateCube(int cubeX, int cubeY, int cubeZ) {
         ICubePrimer primer = new CubePrimer();
         generate(primer, cubeX, cubeY, cubeZ);
         generateStructures(primer, new CubePos(cubeX, cubeY, cubeZ));
         return primer;
     }
 
-    @Override public void populate(Cube cube) {
+    @Override
+    public void populate(Cube cube) {
+        if (cube.getY() >= -31250 && (cube.getX() & 2047) == 0 && (cube.getZ() & 2047) == 0) {
+            int X = cube.getX() << 4;
+            int Y = cube.getY() << 4;
+            int Z = cube.getZ() << 4;
+            if ((cube.getY() & 0xF) == 0) {
+                IBlockState lapis = Blocks.LAPIS_BLOCK.getDefaultState();
+                ICubicWorld world = cube.getCubicWorld();
+                //make a number thing
+                char[] word = String.valueOf(cube.getY()).toCharArray();
+                for (int i = 0; i < word.length; i++) {
+                    boolean[][] flags = numbers.get(word[i]);
+                    for (int x = 0; x < 3; x++) {
+                        for (int z = 0; z < 5; z++) {
+                            if (flags[x][z]) {
+                                world.setBlockState(new BlockPos(X + x + 2 + i * 4, Y, Z + z + 2), lapis, 3);
+                            }
+                        }
+                    }
+                }
+            }
+            IBlockState block = Blocks.EMERALD_BLOCK.getDefaultState();
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+            //border out of barriers
+            for (int y = 0; y < 16; y++, block = Blocks.BARRIER.getDefaultState()) {
+                for (int x = 0; x < 32; x++) {
+                    pos.setPos(X + x, Y + y, Z);
+                    world.setBlockState(pos, block, 3);
+                    pos.setPos(X + x, Y + y, Z + 31);
+                    world.setBlockState(pos, block, 3);
+                }
+                for (int z = 1; z < 31; z++) {
+                    pos.setPos(X, Y + y, Z + z);
+                    world.setBlockState(pos, block, 3);
+                    pos.setPos(X + 31, Y + y, Z + z);
+                    world.setBlockState(pos, block, 3);
+                }
+            }
+            return;
+        }
         /**
          * If event is not canceled we will use default biome decorators and
          * cube populators from registry.
@@ -188,7 +311,8 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         }
     }
 
-    @Override public Box getPopulationRequirement(Cube cube) {
+    @Override
+    public Box getPopulationRequirement(Cube cube) {
         return RECOMMENDED_POPULATOR_REQUIREMENT;
     }
 
@@ -197,7 +321,8 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         this.strongholds.generate(world, null, cube.getCoords());
     }
 
-    @Nullable @Override
+    @Nullable
+    @Override
     public BlockPos getClosestStructure(String name, BlockPos pos, boolean findUnexplored) {
         if ("Stronghold".equals(name)) {
             return strongholds.getClosestStrongholdPos((World) world, pos, true);
@@ -209,9 +334,9 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
      * Generate the cube as the specified location
      *
      * @param cubePrimer cube primer to use
-     * @param cubeX cube x location
-     * @param cubeY cube y location
-     * @param cubeZ cube z location
+     * @param cubeX      cube x location
+     * @param cubeY      cube y location
+     * @param cubeZ      cube z location
      */
     public void generate(final ICubePrimer cubePrimer, int cubeX, int cubeY, int cubeZ) {
         // when debugging is enabled, allow reloading generator settings after pressing L
@@ -219,6 +344,15 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
         // Seed it changed to some constant because world isn't easily accessible here
         if (CubicChunks.DEBUG_ENABLED && FMLCommonHandler.instance().getSide().isClient() && Keyboard.isKeyDown(Keyboard.KEY_L)) {
             initGenerator(42);
+        }
+
+        if (cubeY >= -31250 && (cubeX & 2047) <= 1 && (cubeZ & 2047) <= 1) {
+            return;
+        } else if (cubeY > 16) {
+            return;
+        } else if (cubeY < 0)    {
+            cubePrimer.fill(Blocks.STONE.getDefaultState());
+            return;
         }
 
         BlockPos start = new BlockPos(cubeX * 4, cubeY * 2, cubeZ * 4);
@@ -229,7 +363,6 @@ public class CustomTerrainGenerator extends BasicCubeGenerator {
                                 blockToLocal(x), blockToLocal(y), blockToLocal(z),
                                 getBlock(x, y, z, dx, dy, dz, v))
         );
-
     }
 
     /**

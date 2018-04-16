@@ -25,6 +25,7 @@ package cubicchunks.server;
 
 import cubicchunks.CubicChunks;
 import cubicchunks.asm.CubicChunksMixinConfig;
+import cubicchunks.lighting.LightPropagator;
 import cubicchunks.lighting.LightingManager;
 import cubicchunks.server.chunkio.ICubeIO;
 import cubicchunks.server.chunkio.RegionCubeIO;
@@ -462,9 +463,13 @@ public class CubeProviderServer extends ChunkProviderServer implements ICubeProv
      */
     private void calculateDiffuseSkylight(Cube cube) {
         if (LightingManager.NO_SUNLIGHT_PROPAGATION) {
+            LightPropagator.fillLight(cube, 15);
             cube.setInitialLightingDone(true);
             return;
         }
+
+        assert false;
+
         int cubeX = cube.getX();
         int cubeY = cube.getY();
         int cubeZ = cube.getZ();

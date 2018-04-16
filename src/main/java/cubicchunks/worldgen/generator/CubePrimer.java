@@ -50,6 +50,15 @@ public class CubePrimer implements ICubePrimer {
         this.data[getBlockIndex(x, y, z)] = value;
     }
 
+    @Override
+    public void fill(IBlockState state) {
+        @SuppressWarnings("deprecation")
+        char c = (char) Block.BLOCK_STATE_IDS.get(state);
+        for (int i = 0; i < 4096; i++)   {
+            data[i] = c;
+        }
+    }
+
     /**
      * Map cube local coordinates to an array index in the range [0, 4095].
      *

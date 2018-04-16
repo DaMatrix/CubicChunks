@@ -39,7 +39,7 @@ class LightUpdateQueue {
     /**
      * Enables additional error checks. Can be disable if performance becomes an issue.
      */
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     // there is some redundant arithmetic, but it's there so the pattern is easily visible
     private static final int QUEUE_PART_SIZE = 64 * 1024;

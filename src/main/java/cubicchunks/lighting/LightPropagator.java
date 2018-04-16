@@ -27,6 +27,7 @@ import static cubicchunks.lighting.LightUpdateQueue.MAX_DISTANCE;
 import static cubicchunks.lighting.LightUpdateQueue.MIN_DISTANCE;
 import static net.minecraft.crash.CrashReportCategory.getCoordinateInfo;
 
+import cubicchunks.world.cube.Cube;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
@@ -34,7 +35,10 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
+import net.minecraft.world.chunk.NibbleArray;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
@@ -48,6 +52,19 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class LightPropagator {
 
     @Nonnull private LightUpdateQueue internalRelightQueue = new LightUpdateQueue();
+
+    public static void fillLight(Cube cube, int v)   {
+        ExtendedBlockStorage storage = cube.getStorage();
+        if (storage == null)    {
+            cube.newStorage();
+            storage = cube.getStorage();
+        }
+        v &= 0xF;
+        byte b = (byte) ((v << 4) | v);
+        byte[] a = storage.getSkyLight().getData();
+        Arrays.fill(a, b);
+        cube.markDirty();
+    }
 
     /**
      * Updates light at all BlockPos in given iterable.
@@ -76,6 +93,9 @@ public class LightPropagator {
             Consumer<BlockPos> setLightCallback) {
         if (type == EnumSkyBlock.SKY && LightingManager.NO_SUNLIGHT_PROPAGATION) {
             return;
+        }
+        if (type == EnumSkyBlock.SKY)   {
+            assert false;
         }
         internalRelightQueue.begin(centerPos);
         try {

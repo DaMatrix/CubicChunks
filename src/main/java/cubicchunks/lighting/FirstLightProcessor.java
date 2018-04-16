@@ -150,13 +150,14 @@ public class FirstLightProcessor {
      * @param cube the cube whose skylight is to be initialized
      */
     public void diffuseSkylight(Cube cube) {
-        if (LightingManager.NO_SUNLIGHT_PROPAGATION) {
-            return;
-        }
-        if (!cube.getCubicWorld().getProvider().hasSkyLight()) {
+        if (LightingManager.NO_SUNLIGHT_PROPAGATION || !cube.getCubicWorld().getProvider().hasSkyLight()) {
+            LightPropagator.fillLight(cube, 15);
             cube.setInitialLightingDone(true);
             return;
         }
+
+        assert false;
+
         ICubicWorld world = cube.getCubicWorld();
 
         // Cache min/max Y, generating them may be expensive

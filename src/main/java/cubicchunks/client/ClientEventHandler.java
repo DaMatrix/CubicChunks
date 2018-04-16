@@ -40,8 +40,10 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiVideoSettings;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.WorldType;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
@@ -52,6 +54,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import net.minecraftforge.fml.relauncher.Side;
+import org.lwjgl.input.Keyboard;
 
 import java.util.List;
 import java.util.Optional;
@@ -71,6 +74,13 @@ public class ClientEventHandler {
         }
         if (evt.phase == TickEvent.Phase.END && world.isCubicWorld()) {
             world.tickCubicWorld();
+        }
+        EntityPlayer player = Minecraft.getMinecraft().player;
+        /*if (player.motionY < -2.5d)  {
+            player.motionY = -2.5d;
+        }*/
+        if (Keyboard.isKeyDown(Keyboard.KEY_0)) {
+            player.sendMessage(new TextComponentString("motionY: " + player.motionY));
         }
     }
 
