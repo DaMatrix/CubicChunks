@@ -62,7 +62,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class LightingManager implements ILightingManager {
 
-    public static final boolean NO_SUNLIGHT_PROPAGATION = "true".equalsIgnoreCase(System.getProperty("cubicchunks.nosunlight"));
+    public static final boolean NO_SUNLIGHT_PROPAGATION = "true".equalsIgnoreCase(System.getProperty("cubicchunks.nosunlight", "true"));
 
     public static final int MAX_CLIENT_LIGHT_SCAN_DEPTH = 64;
     @Nonnull private World world;
