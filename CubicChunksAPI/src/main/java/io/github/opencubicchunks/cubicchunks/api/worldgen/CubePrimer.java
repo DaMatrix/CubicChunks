@@ -36,7 +36,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CubePrimer {
+public class CubePrimer implements AutoCloseable {
     public static final IBlockState DEFAULT_STATE = Blocks.AIR.getDefaultState();
 
     private final char[] data;
@@ -154,5 +154,9 @@ public class CubePrimer {
      */
     private static int getBlockIndex(int x, int y, int z) {
         return y << 8 | z << 4 | x;
+    }
+
+    @Override
+    public void close() {
     }
 }

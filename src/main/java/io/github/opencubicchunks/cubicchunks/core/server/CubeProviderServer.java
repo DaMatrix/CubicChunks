@@ -403,8 +403,10 @@ public class CubeProviderServer extends ChunkProviderServer implements ICubeProv
      * @return The generated cube
      */
     private Cube generateCube(int cubeX, int cubeY, int cubeZ, Chunk column) {
-        CubePrimer primer = cubeGen.generateCube(cubeX, cubeY, cubeZ);
-        Cube cube = new Cube(column, cubeY, primer);
+        Cube cube;
+        try (CubePrimer primer = cubeGen.generateCube(cubeX, cubeY, cubeZ)) {
+            cube = new Cube(column, cubeY, primer);
+        }
 
         onCubeLoaded(cube, column);
 
