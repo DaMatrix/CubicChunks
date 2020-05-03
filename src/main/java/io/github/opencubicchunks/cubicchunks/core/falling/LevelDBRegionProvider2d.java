@@ -7,6 +7,7 @@ import cubicchunks.regionlib.impl.EntryLocation3D;
 import cubicchunks.regionlib.util.CheckedConsumer;
 import cubicchunks.regionlib.util.CheckedFunction;
 import io.netty.buffer.Unpooled;
+import net.daporkchop.ldbjni.LevelDB;
 import org.iq80.leveldb.CompressionType;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.Options;
@@ -25,7 +26,7 @@ public class LevelDBRegionProvider2d implements IRegionProvider<EntryLocation2D>
     protected final DB db;
 
     public LevelDBRegionProvider2d(Path path) throws IOException {
-        this.db = Iq80DBFactory.factory.open(path.toFile(), new Options()
+        this.db = LevelDB.PROVIDER.open(path.toFile(), new Options()
                 .compressionType(CompressionType.ZLIB_RAW)
                 .verifyChecksums(false));
     }
