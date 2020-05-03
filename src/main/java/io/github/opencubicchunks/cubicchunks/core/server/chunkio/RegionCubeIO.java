@@ -36,9 +36,13 @@ import cubicchunks.regionlib.lib.provider.SimpleRegionProvider;
 import cubicchunks.regionlib.util.Utils;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
-import io.github.opencubicchunks.cubicchunks.core.falling.LevelDBRegionProvider;
+import io.github.opencubicchunks.cubicchunks.core.falling.LevelDBRegionProvider2d;
+import io.github.opencubicchunks.cubicchunks.core.falling.LevelDBRegionProvider3d;
 import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.NBTSizeTracker;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.datafix.FixTypes;
 import net.minecraft.util.math.ChunkPos;
@@ -118,15 +122,8 @@ public class RegionCubeIO implements ICubeIO {
             Path part3d = path.resolve("region3d");
             Utils.createDirectories(part3d);
 
-            SaveSection2D section2d = SaveSection2D.createAt(part2d);
-            SaveSection3D section3d = new SaveSection3D(
-                    new LevelDBRegionProvider(part3d),
-                    new SharedCachedRegionProvider<>(
-                            new SimpleRegionProvider<>(new EntryLocation3D.Provider(), part3d,
-                                    (keyProvider, regionKey) -> new ExtRegion<>(part3d, Collections.emptyList(), keyProvider, regionKey),
-                                    (dir, key) -> Files.exists(dir.resolve(key.getRegionKey().getName() + ".ext"))
-                            )
-                    ));
+            SaveSection2D section2d = new SaveSection2D(new LevelDBRegionProvider2d(part2d));
+            SaveSection3D section3d = new SaveSection3D(new LevelDBRegionProvider3d(part3d));
             this.save = new SaveCubeColumns(section2d, section3d);
         } else {
             this.save = SaveCubeColumns.create(path);
@@ -174,7 +171,7 @@ public class RegionCubeIO implements ICubeIO {
             if (!buf.isPresent()) {
                 return null;
             }
-            nbt = FMLCommonHandler.instance().getDataFixer().process(FixTypes.CHUNK, CompressedStreamTools.readCompressed(new ByteArrayInputStream(buf.get().array())));
+            nbt = FMLCommonHandler.instance().getDataFixer().process(FixTypes.CHUNK, CompressedStreamTools.read(new ByteBufInputStream(Unpooled.wrappedBuffer(buf.get())), NBTSizeTracker.INFINITE));
         }
         return IONbtReader.readColumn(world, chunkX, chunkZ, nbt);
     }
@@ -193,7 +190,7 @@ public class RegionCubeIO implements ICubeIO {
             if (!buf.isPresent()) {
                 return null;
             }
-            nbt = FMLCommonHandler.instance().getDataFixer().process(FixTypes.CHUNK, CompressedStreamTools.readCompressed(new ByteArrayInputStream(buf.get().array())));
+            nbt = FMLCommonHandler.instance().getDataFixer().process(FixTypes.CHUNK, CompressedStreamTools.read(new ByteBufInputStream(Unpooled.wrappedBuffer(buf.get())), NBTSizeTracker.INFINITE));
         }
 
         // restore the cube - async part
