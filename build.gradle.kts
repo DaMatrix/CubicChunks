@@ -127,6 +127,13 @@ compile.extendsFrom(coreShadow)
 // this is needed because it.ozimov:java7-hamcrest-matchers:0.7.0 depends on guava 19, while MC needs guava 21
 configurations.all { resolutionStrategy { force("com.google.guava:guava:21.0") } }
 
+repositories {
+    mavenCentral()
+    maven { setUrl("https://maven.daporkchop.net/snapshot/") }
+    maven { setUrl("https://repo.nukkitx.com/snapshot/") }
+    maven { setUrl("https://oss.sonatype.org/content/repositories/public/") }
+}
+
 dependencies {
     embed("com.flowpowered:flow-noise:1.0.1-SNAPSHOT")
     // https://mvnrepository.com/artifact/com.typesafe/config
@@ -139,6 +146,9 @@ dependencies {
     testCompile("it.ozimov:java7-hamcrest-matchers:0.7.0")
     testCompile("org.mockito:mockito-core:2.1.0-RC.2")
     testCompile("org.spongepowered:launchwrappertestsuite:1.0-SNAPSHOT")
+
+    //coreShadow("net.daporkchop.lib:compression-zlib:0.5.5-SNAPSHOT")
+    coreShadow("net.daporkchop:leveldb-mcpe-jni:0.0.7-SNAPSHOT")
 
     coreShadow("org.spongepowered:mixin:0.8.1-SNAPSHOT") {
         isTransitive = false

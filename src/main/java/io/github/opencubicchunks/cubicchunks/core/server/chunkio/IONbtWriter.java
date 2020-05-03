@@ -33,6 +33,9 @@ import io.github.opencubicchunks.cubicchunks.core.asm.mixin.ICubicWorldInternal;
 import io.github.opencubicchunks.cubicchunks.core.world.ClientHeightMap;
 import io.github.opencubicchunks.cubicchunks.core.world.ServerHeightMap;
 import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.PooledByteBufAllocator;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.Block;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -52,6 +55,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static net.minecraftforge.common.MinecraftForge.EVENT_BUS;
@@ -59,11 +63,15 @@ import static net.minecraftforge.common.MinecraftForge.EVENT_BUS;
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 class IONbtWriter {
-    
+
     static byte[] writeNbtBytes(NBTTagCompound nbt) throws IOException {
-        ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        CompressedStreamTools.writeCompressed(nbt, buf);
-        return buf.toByteArray();
+        ByteBuf buf = PooledByteBufAllocator.DEFAULT.heapBuffer(1 << 16);
+        try {
+            CompressedStreamTools.write(nbt, new ByteBufOutputStream(buf));
+            return Arrays.copyOfRange(buf.array(), buf.arrayOffset() + buf.readerIndex(), buf.arrayOffset() + buf.writerIndex());
+        } finally {
+            buf.release();
+        }
     }
 
     static NBTTagCompound write(Chunk column) {

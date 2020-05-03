@@ -28,8 +28,15 @@ import cubicchunks.regionlib.api.region.key.IKey;
 import cubicchunks.regionlib.impl.EntryLocation2D;
 import cubicchunks.regionlib.impl.EntryLocation3D;
 import cubicchunks.regionlib.impl.SaveCubeColumns;
+import cubicchunks.regionlib.impl.save.SaveSection2D;
+import cubicchunks.regionlib.impl.save.SaveSection3D;
+import cubicchunks.regionlib.lib.ExtRegion;
+import cubicchunks.regionlib.lib.provider.SharedCachedRegionProvider;
+import cubicchunks.regionlib.lib.provider.SimpleRegionProvider;
+import cubicchunks.regionlib.util.Utils;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
+import io.github.opencubicchunks.cubicchunks.core.falling.LevelDBRegionProvider;
 import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
@@ -43,18 +50,19 @@ import net.minecraft.world.storage.ThreadedFileIOBase;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class RegionCubeIO implements ICubeIO {
 
@@ -62,10 +70,13 @@ public class RegionCubeIO implements ICubeIO {
     private static final long MB = kB * 1024;
     private static final Logger LOGGER = CubicChunks.LOGGER;
 
-    @Nonnull private World world;
+    @Nonnull
+    private World world;
     private SaveCubeColumns save;
-    @Nonnull private ConcurrentMap<ChunkPos, SaveEntry<EntryLocation2D>> columnsToSave;
-    @Nonnull private ConcurrentMap<CubePos, SaveEntry<EntryLocation3D>> cubesToSave;
+    @Nonnull
+    private ConcurrentMap<ChunkPos, SaveEntry<EntryLocation2D>> columnsToSave;
+    @Nonnull
+    private ConcurrentMap<CubePos, SaveEntry<EntryLocation3D>> cubesToSave;
 
     public RegionCubeIO(World world) throws IOException {
         this.world = world;
@@ -98,7 +109,28 @@ public class RegionCubeIO implements ICubeIO {
             path = Paths.get(".").toAbsolutePath().resolve("clientCache").resolve("DIM" + world.provider.getDimension());
         }
 
-        this.save = SaveCubeColumns.create(path);
+        if (true) {
+            Utils.createDirectories(path);
+
+            Path part2d = path.resolve("region2d");
+            Utils.createDirectories(part2d);
+
+            Path part3d = path.resolve("region3d");
+            Utils.createDirectories(part3d);
+
+            SaveSection2D section2d = SaveSection2D.createAt(part2d);
+            SaveSection3D section3d = new SaveSection3D(
+                    new LevelDBRegionProvider(part3d),
+                    new SharedCachedRegionProvider<>(
+                            new SimpleRegionProvider<>(new EntryLocation3D.Provider(), part3d,
+                                    (keyProvider, regionKey) -> new ExtRegion<>(part3d, Collections.emptyList(), keyProvider, regionKey),
+                                    (dir, key) -> Files.exists(dir.resolve(key.getRegionKey().getName() + ".ext"))
+                            )
+                    ));
+            this.save = new SaveCubeColumns(section2d, section3d);
+        } else {
+            this.save = SaveCubeColumns.create(path);
+        }
     }
 
     @Override
@@ -147,7 +179,9 @@ public class RegionCubeIO implements ICubeIO {
         return IONbtReader.readColumn(world, chunkX, chunkZ, nbt);
     }
 
-    @Override @Nullable public ICubeIO.PartialCubeData loadCubeAsyncPart(Chunk column, int cubeY) throws IOException {
+    @Override
+    @Nullable
+    public ICubeIO.PartialCubeData loadCubeAsyncPart(Chunk column, int cubeY) throws IOException {
         SaveCubeColumns save = this.getSave();
         NBTTagCompound nbt;
         SaveEntry<EntryLocation3D> saveEntry;
@@ -170,11 +204,13 @@ public class RegionCubeIO implements ICubeIO {
         return new ICubeIO.PartialCubeData(cube, nbt);
     }
 
-    @Override public void loadCubeSyncPart(ICubeIO.PartialCubeData info) {
+    @Override
+    public void loadCubeSyncPart(ICubeIO.PartialCubeData info) {
         IONbtReader.readCubeSyncPart(info.cube, world, info.nbt);
     }
 
-    @Override public void saveColumn(Chunk column) {
+    @Override
+    public void saveColumn(Chunk column) {
         // NOTE: this function blocks the world thread
         // make it as fast as possible by offloading processing to the IO thread
         // except we have to write the NBT in this thread to avoid problems
@@ -189,7 +225,8 @@ public class RegionCubeIO implements ICubeIO {
         ThreadedFileIOBase.getThreadedIOInstance().queueIO(this);
     }
 
-    @Override public void saveCube(Cube cube) {
+    @Override
+    public void saveCube(Cube cube) {
         // NOTE: this function blocks the world thread, so make it fast
 
         this.cubesToSave.put(cube.getCoords(), new SaveEntry<>(new EntryLocation3D(cube.getX(), cube.getY(), cube.getZ()), IONbtWriter.write(cube)));
@@ -199,7 +236,8 @@ public class RegionCubeIO implements ICubeIO {
         ThreadedFileIOBase.getThreadedIOInstance().queueIO(this);
     }
 
-    @Override public boolean cubeExists(int cubeX, int cubeY, int cubeZ) {
+    @Override
+    public boolean cubeExists(int cubeX, int cubeY, int cubeZ) {
         try {
             return this.getSave().getSaveSection3D().hasEntry(new EntryLocation3D(cubeX, cubeY, cubeZ));
         } catch (IOException e) {
@@ -208,7 +246,8 @@ public class RegionCubeIO implements ICubeIO {
         }
     }
 
-    @Override public boolean columnExists(int columnX, int columnZ) {
+    @Override
+    public boolean columnExists(int columnX, int columnZ) {
         try {
             return this.getSave().getSaveSection2D().hasEntry(new EntryLocation2D(columnX, columnZ));
         } catch (IOException e) {
@@ -217,11 +256,13 @@ public class RegionCubeIO implements ICubeIO {
         }
     }
 
-    @Override public int getPendingColumnCount() {
+    @Override
+    public int getPendingColumnCount() {
         return columnsToSave.size();
     }
 
-    @Override public int getPendingCubeCount() {
+    @Override
+    public int getPendingCubeCount() {
         return cubesToSave.size();
     }
 
@@ -294,5 +335,4 @@ public class RegionCubeIO implements ICubeIO {
             this.nbt = nbt;
         }
     }
-
 }
