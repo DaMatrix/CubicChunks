@@ -24,11 +24,13 @@
  */
 package io.github.opencubicchunks.cubicchunks.core.asm.mixin.fixes.common;
 
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetHandlerPlayServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.Slice;
 
 @Mixin(NetHandlerPlayServer.class)
@@ -44,5 +46,12 @@ public class MixinNetHandlerPlayServer {
     )
     private static double getMaxY(double old) {
         return Integer.MAX_VALUE - 4096;
+    }
+
+    @Redirect(
+            method = "Lnet/minecraft/network/NetHandlerPlayServer;processPlayer(Lnet/minecraft/network/play/client/CPacketPlayer;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/EntityPlayerMP;isInvulnerableDimensionChange()Z"))
+    private boolean makeEverythingValid(EntityPlayerMP player)  {
+        return true;
     }
 }
