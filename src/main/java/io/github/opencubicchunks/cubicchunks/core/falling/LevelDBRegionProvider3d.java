@@ -7,24 +7,27 @@ import cubicchunks.regionlib.util.CheckedConsumer;
 import cubicchunks.regionlib.util.CheckedFunction;
 import io.netty.buffer.Unpooled;
 import net.daporkchop.ldbjni.LevelDB;
+import net.daporkchop.lib.common.function.throwing.ERunnable;
 import org.iq80.leveldb.CompressionType;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.Options;
-import org.iq80.leveldb.impl.Iq80DBFactory;
+import org.iq80.leveldb.WriteBatch;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author DaPorkchop_
  */
 public class LevelDBRegionProvider3d implements IRegionProvider<EntryLocation3D> {
     protected final DB db;
+    private final Set<EntryLocation3D> queued = new HashSet<>();
+    private volatile WriteBatch batch;
 
     public LevelDBRegionProvider3d(Path path) throws IOException {
         this.db = LevelDB.PROVIDER.open(path.toFile(), new Options()
@@ -70,18 +73,46 @@ public class LevelDBRegionProvider3d implements IRegionProvider<EntryLocation3D>
     }
 
     @Override
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
+        this.flush();
         this.db.close();
     }
 
-    protected class Region implements IRegion<EntryLocation3D>  {
+    private synchronized void put(EntryLocation3D pos, byte[] key, byte[] value) throws IOException {
+        if (this.batch == null) {
+            this.batch = this.db.createWriteBatch();
+            new Thread((ERunnable) () -> {
+                Thread.sleep(1000L);
+                this.flush();
+            }).start();
+        }
+        this.queued.add(pos);
+        this.batch.put(key, value);
+    }
+
+    private synchronized void flush() throws IOException {
+        if (this.batch != null) {
+            this.db.write(this.batch);
+            this.batch = null;
+            this.queued.clear();
+        }
+    }
+
+    private synchronized byte[] get(EntryLocation3D pos, byte[] key)  throws IOException {
+        if (this.batch != null && this.queued.contains(pos))    {
+            this.flush();
+        }
+        return this.db.get(key);
+    }
+
+    protected class Region implements IRegion<EntryLocation3D> {
         protected final String key;
 
-        public Region(String key)   {
+        public Region(String key) {
             this.key = key;
         }
 
-        public byte[] encode(EntryLocation3D key)   {
+        public byte[] encode(EntryLocation3D key) {
             return Unpooled.wrappedBuffer(new byte[12]).clear() //y first
                     .writeInt(key.getEntryY())
                     .writeInt(key.getEntryX())
@@ -91,14 +122,14 @@ public class LevelDBRegionProvider3d implements IRegionProvider<EntryLocation3D>
 
         @Override
         public void writeValue(EntryLocation3D key, ByteBuffer value) throws IOException {
-            if (value.isDirect())  {
+            if (value.isDirect()) {
                 throw new IllegalArgumentException();
             }
             byte[] arr = value.array();
-            if (value.position() != 0 || value.limit() != arr.length)   {
+            if (value.position() != 0 || value.limit() != arr.length) {
                 arr = Arrays.copyOfRange(arr, value.position(), value.limit());
             }
-            db.put(this.encode(key), arr);
+            put(key, this.encode(key), arr);
         }
 
         @Override
@@ -108,13 +139,15 @@ public class LevelDBRegionProvider3d implements IRegionProvider<EntryLocation3D>
 
         @Override
         public Optional<ByteBuffer> readValue(EntryLocation3D key) throws IOException {
-            byte[] arr = db.get(this.encode(key));
+            byte[] arr = get(key, this.encode(key));
             return arr == null ? Optional.empty() : Optional.of(ByteBuffer.wrap(arr));
         }
 
         @Override
         public boolean hasValue(EntryLocation3D key) {
-            return db.get(this.encode(key)) != null;
+            synchronized (LevelDBRegionProvider3d.this) {
+                return queued.contains(key) || db.get(this.encode(key)) != null;
+            }
         }
 
         @Override
