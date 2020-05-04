@@ -65,13 +65,9 @@ import static net.minecraftforge.common.MinecraftForge.EVENT_BUS;
 class IONbtWriter {
 
     static byte[] writeNbtBytes(NBTTagCompound nbt) throws IOException {
-        ByteBuf buf = PooledByteBufAllocator.DEFAULT.heapBuffer(1 << 16);
-        try {
-            CompressedStreamTools.write(nbt, new ByteBufOutputStream(buf));
-            return Arrays.copyOfRange(buf.array(), buf.arrayOffset() + buf.readerIndex(), buf.arrayOffset() + buf.writerIndex());
-        } finally {
-            buf.release();
-        }
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        CompressedStreamTools.writeCompressed(nbt, buf);
+        return buf.toByteArray();
     }
 
     static NBTTagCompound write(Chunk column) {
