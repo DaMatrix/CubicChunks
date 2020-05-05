@@ -32,7 +32,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftServer.class)
@@ -45,5 +47,12 @@ public class MixinMinecraftServer {
             ((ICubicWorldInternal.Server) world).setSpawnArea(new SpawnCubes());
             ((ICubicWorldInternal.Server) world).getSpawnArea().update(world);
         }
+    }
+
+    @ModifyConstant(
+            method = "Lnet/minecraft/server/MinecraftServer;tick()V",
+            constant = @Constant(intValue = 900))
+    private int increaseAutoSave(int oldValue) {
+        return 18000; //every 15 mins
     }
 }
