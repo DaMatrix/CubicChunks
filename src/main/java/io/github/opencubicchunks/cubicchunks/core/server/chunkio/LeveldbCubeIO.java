@@ -66,6 +66,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class LeveldbCubeIO implements ICubeIO {
+    public static LeveldbCubeIO OVERWORLD_INSTANCE;
+
     private static final Options COLUMN_DB_OPTIONS = new Options()
             .compressionType(CompressionType.ZLIB_RAW)
             .verifyChecksums(false);
@@ -111,8 +113,8 @@ public class LeveldbCubeIO implements ICubeIO {
     private ConcurrentMap<ChunkPos, NBTTagCompound> columnsToSave;
     @Nonnull
     private ConcurrentMap<CubePos, NBTTagCompound> cubesToSave;
-    private DB columnDb;
-    private DB cubeDb;
+    public DB columnDb;
+    public DB cubeDb;
 
     public LeveldbCubeIO(World world) throws IOException {
         this.world = world;
@@ -143,6 +145,9 @@ public class LeveldbCubeIO implements ICubeIO {
         Path path;
         if (this.world instanceof WorldServer) {
             WorldProvider prov = this.world.provider;
+            if (prov.getDimension() == 0)   {
+                OVERWORLD_INSTANCE = this;
+            }
             path = this.world.getSaveHandler().getWorldDirectory().toPath();
             if (prov.getSaveFolder() != null) {
                 path = path.resolve(prov.getSaveFolder());
