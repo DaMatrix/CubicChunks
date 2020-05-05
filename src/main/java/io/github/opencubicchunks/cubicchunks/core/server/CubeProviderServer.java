@@ -25,6 +25,7 @@
 package io.github.opencubicchunks.cubicchunks.core.server;
 
 import io.github.opencubicchunks.cubicchunks.core.CubicChunksConfig;
+import io.github.opencubicchunks.cubicchunks.core.LeveldbConfig;
 import io.github.opencubicchunks.cubicchunks.core.lighting.LightingManager;
 import io.github.opencubicchunks.cubicchunks.core.server.chunkio.ICubeIO;
 import io.github.opencubicchunks.cubicchunks.core.server.chunkio.LeveldbCubeIO;
@@ -99,7 +100,7 @@ public class CubeProviderServer extends ChunkProviderServer implements ICubeProv
         this.worldServer = worldServer;
         this.profiler = worldServer.profiler;
         try {
-            this.cubeIO = CubicChunksConfig.leveldb ? new LeveldbCubeIO(worldServer) : new RegionCubeIO(worldServer);
+            this.cubeIO = LeveldbConfig.leveldb ? new LeveldbCubeIO(worldServer) : new RegionCubeIO(worldServer);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

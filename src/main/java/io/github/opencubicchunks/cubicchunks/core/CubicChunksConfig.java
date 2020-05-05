@@ -34,6 +34,7 @@ import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.iq80.leveldb.CompressionType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -157,12 +158,6 @@ public class CubicChunksConfig {
     @Config.Comment("World max height. Values that are not an integer multiple of 16 may cause unintended behavior")
     @Config.RangeInt(min = 16, max = CubicChunks.MAX_SUPPORTED_BLOCK_Y)
     public static int defaultMaxHeight = 1 << 30;
-
-    @Config.LangKey("cubicchunks.config.use_leveldb")
-    @Config.Comment("Use leveldb-mcpe as the storage format. This can significantly reduce world sizes, but may not run correctly on all platforms.\n" +
-            "Note that changing this value for an existing world will result in the existing world data being silently ignored and possibly overwritten.")
-    @Config.RequiresWorldRestart
-    public static boolean leveldb = true;
 
     public static int defaultMaxCubesPerChunkloadingTicket = 25 * 16;
     public static Map<String, Integer> modMaxCubesPerChunkloadingTicket = new HashMap<>();

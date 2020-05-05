@@ -27,6 +27,7 @@ package io.github.opencubicchunks.cubicchunks.core.server.chunkio;
 import cubicchunks.regionlib.util.Utils;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
+import io.github.opencubicchunks.cubicchunks.core.LeveldbConfig;
 import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
@@ -69,13 +70,13 @@ public class LeveldbCubeIO implements ICubeIO {
     public static LeveldbCubeIO OVERWORLD_INSTANCE;
 
     private static final Options COLUMN_DB_OPTIONS = new Options()
-            .compressionType(CompressionType.ZLIB_RAW)
+            .compressionType(LeveldbConfig.columnCompressionType)
             .verifyChecksums(false);
 
     private static final Options CUBE_DB_OPTIONS = new Options()
             .writeBufferSize(67108864)
             .blockSize(16777216)
-            .compressionType(CompressionType.ZLIB_RAW)
+            .compressionType(LeveldbConfig.cubeCompressionType)
             .verifyChecksums(false);
 
     private static final WriteOptions SYNC_WRITE = new WriteOptions().sync(true);
