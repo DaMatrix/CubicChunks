@@ -35,6 +35,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftServer.class)
@@ -53,6 +54,13 @@ public class MixinMinecraftServer {
             method = "Lnet/minecraft/server/MinecraftServer;tick()V",
             constant = @Constant(intValue = 900))
     private int increaseAutoSave(int oldValue) {
-        return 18000; //every 15 mins
+        return 18000 << 1; //every 30 mins
+    }
+
+    @Redirect(
+            method = "Lnet/minecraft/server/MinecraftServer;tick()V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;saveAllWorlds(Z)V"))
+    private void makeSaveVerbose(MinecraftServer server, boolean verbose) {
+        server.saveAllWorlds(false);
     }
 }

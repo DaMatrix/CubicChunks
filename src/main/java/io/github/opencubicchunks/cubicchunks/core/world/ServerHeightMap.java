@@ -28,11 +28,15 @@ import io.github.opencubicchunks.cubicchunks.api.util.Coords;
 import io.github.opencubicchunks.cubicchunks.api.world.IHeightMap;
 import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
 import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.PooledByteBufAllocator;
 import mcp.MethodsReturnNonnullByDefault;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -730,14 +734,16 @@ public class ServerHeightMap implements IHeightMap {
     // Serialization / NBT ---------------------------------------------------------------------------------------------
 
     public byte[] getData() {
+        ByteBuf buf = PooledByteBufAllocator.DEFAULT.ioBuffer(1 << 24);
         try {
-            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            DataOutputStream out = new DataOutputStream(buf);
-            writeData(out);
-            out.close();
-            return buf.toByteArray();
-        } catch (IOException ex) {
-            throw new Error(ex);
+            this.writeData(new ByteBufOutputStream(buf));
+            byte[] arr = new byte[buf.readableBytes()];
+            buf.readBytes(arr);
+            return arr;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            buf.release();
         }
     }
 
@@ -784,7 +790,7 @@ public class ServerHeightMap implements IHeightMap {
         }
     }
 
-    private void writeData(DataOutputStream out) throws IOException {
+    private void writeData(DataOutput out) throws IOException {
         for (int i = 0; i < this.segments.length; i++) {
             out.writeInt(this.ymin[i]);
             out.writeInt(this.ymax.get(i));

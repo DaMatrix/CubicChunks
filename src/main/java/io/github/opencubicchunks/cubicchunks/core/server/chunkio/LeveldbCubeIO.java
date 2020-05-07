@@ -99,10 +99,12 @@ public class LeveldbCubeIO implements ICubeIO {
     }
 
     static byte[] writeUncompressedNbtBytes(NBTTagCompound nbt) throws IOException {
-        ByteBuf buf = PooledByteBufAllocator.DEFAULT.heapBuffer(1 << 16);
+        ByteBuf buf = PooledByteBufAllocator.DEFAULT.ioBuffer(1 << 16);
         try {
             CompressedStreamTools.write(nbt, new ByteBufOutputStream(buf));
-            return Arrays.copyOfRange(buf.array(), buf.arrayOffset() + buf.readerIndex(), buf.arrayOffset() + buf.writerIndex());
+            byte[] arr = new byte[buf.readableBytes()];
+            buf.readBytes(arr);
+            return arr;
         } finally {
             buf.release();
         }
