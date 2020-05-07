@@ -26,6 +26,7 @@ package io.github.opencubicchunks.cubicchunks.core;
 
 import static io.github.opencubicchunks.cubicchunks.core.util.ReflectionUtil.cast;
 
+import io.github.opencubicchunks.cubicchunks.api.util.IdAccess;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.VanillaCompatibilityGeneratorProviderBase;
 import io.github.opencubicchunks.cubicchunks.core.asm.mixin.ICubicWorldSettings;
 import io.github.opencubicchunks.cubicchunks.core.asm.mixin.core.common.IIntegratedServer;
@@ -37,6 +38,7 @@ import io.github.opencubicchunks.cubicchunks.core.world.type.VanillaCubicWorldTy
 import io.github.opencubicchunks.cubicchunks.core.worldgen.WorldgenHangWatchdog;
 import io.github.opencubicchunks.cubicchunks.core.worldgen.generator.vanilla.VanillaCompatibilityGenerator;
 import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.block.Block;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraftforge.common.MinecraftForge;
@@ -50,6 +52,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.NetworkCheckHandler;
 import net.minecraftforge.fml.common.versioning.ArtifactVersion;
@@ -147,6 +150,12 @@ public class CubicChunks {
                     // no-op, done by mixin
                 }
         );
+    }
+
+    @EventHandler
+    @SuppressWarnings("deprecation")
+    public void onServerStarting(FMLServerStartingEvent event)    {
+        Block.BLOCK_STATE_IDS.forEach(state -> ((IdAccess) state).updateId());
     }
     
     @SubscribeEvent

@@ -18,6 +18,7 @@
         "common.IIntegratedServer",
         "common.IPlayerChunkMapEntry",
         "common.MixinAnvilSaveHandler",
+        "common.MixinBlockStateBase",
         "common.MixinChunk_Column",
         "common.MixinChunk_Cubes",
         "common.MixinChunkCache_HeightLimits",

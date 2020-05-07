@@ -24,6 +24,7 @@
  */
 package io.github.opencubicchunks.cubicchunks.api.worldgen;
 
+import io.github.opencubicchunks.cubicchunks.api.util.IdAccess;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -131,8 +132,7 @@ public class CubePrimer implements AutoCloseable {
      * @param state the block state
      */
     public void setBlockState(int x, int y, int z, @Nonnull IBlockState state) {
-        @SuppressWarnings("deprecation")
-        int value = Block.BLOCK_STATE_IDS.get(state);
+        int value = ((IdAccess) state).getId();
         char lsb = (char) value;
         int idx = getBlockIndex(x, y, z);
         this.data[idx] = lsb;
