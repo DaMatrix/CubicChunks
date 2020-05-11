@@ -42,10 +42,10 @@ public class CubePrimer implements AutoCloseable {
 
     protected final char[] data;
     //private byte[] extData = null; // NEID-compat
-    protected Biome[] biomes3d = null;
+    protected Biome biome;
 
     public boolean hasBiomes() {
-        return biomes3d != null;
+        return this.biome != null;
     }
 
     public CubePrimer() {
@@ -68,12 +68,7 @@ public class CubePrimer implements AutoCloseable {
     @SuppressWarnings("unused")
     @Nullable
     public Biome getBiome(int localBiomeX, int localBiomeY, int localBiomeZ) {
-        if (biomes3d == null) {
-            return null;
-        }
-        int biomeX = localBiomeX * 2;
-        int biomeZ = localBiomeZ * 2;
-        return this.biomes3d[biomeX << 3 | biomeZ];
+        return this.biome;
     }
 
     /**
@@ -89,19 +84,8 @@ public class CubePrimer implements AutoCloseable {
      *              affect the returned value at other coordinates due to internal storage differences.
      */
     @SuppressWarnings("unused")
-    public void setBiome(int localBiomeX, int localBiomeY, int localBiomeZ, Biome biome) {
-        if (this.biomes3d == null) {
-            this.biomes3d = new Biome[8 * 8];
-        }
-
-        int biomeX = localBiomeX * 2;
-        int biomeZ = localBiomeZ * 2;
-
-        for (int dx = 0; dx < 2; dx++) {
-            for (int dz = 0; dz < 2; dz++) {
-                this.biomes3d[(biomeX + dx) << 3 | (biomeZ + dz)] = biome;
-            }
-        }
+    public void setBiome(Biome biome) {
+        this.biome = biome;
     }
 
     /**
