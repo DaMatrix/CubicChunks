@@ -137,7 +137,10 @@ public class CubicChunks {
     }
 
     @EventHandler
+    @SuppressWarnings("deprecation")
     public void onServerAboutToStart(FMLServerAboutToStartEvent event) {
+        Block.BLOCK_STATE_IDS.forEach(state -> ((IdAccess) state).updateId());
+
         SideUtils.runForSide(
                 () -> () -> {
                     IIntegratedServer integratedServer = cast(event.getServer());
@@ -150,12 +153,6 @@ public class CubicChunks {
                     // no-op, done by mixin
                 }
         );
-    }
-
-    @EventHandler
-    @SuppressWarnings("deprecation")
-    public void onServerStarting(FMLServerStartingEvent event)    {
-        Block.BLOCK_STATE_IDS.forEach(state -> ((IdAccess) state).updateId());
     }
     
     @SubscribeEvent

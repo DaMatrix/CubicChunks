@@ -40,9 +40,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class CubePrimer implements AutoCloseable {
     public static final IBlockState DEFAULT_STATE = Blocks.AIR.getDefaultState();
 
-    private final char[] data;
-    private byte[] extData = null; // NEID-compat
-    private Biome[] biomes3d = null;
+    protected final char[] data;
+    //private byte[] extData = null; // NEID-compat
+    protected Biome[] biomes3d = null;
 
     public boolean hasBiomes() {
         return biomes3d != null;
@@ -115,9 +115,9 @@ public class CubePrimer implements AutoCloseable {
     public IBlockState getBlockState(int x, int y, int z) {
         int idx = getBlockIndex(x, y, z);
         int block = this.data[idx];
-        if (extData != null) {
+        /*if (extData != null) {
             block |= extData[idx] << 16;
-        }
+        }*/
         @SuppressWarnings("deprecation")
         IBlockState iblockstate = Block.BLOCK_STATE_IDS.getByValue(block);
         return iblockstate == null ? DEFAULT_STATE : iblockstate;
@@ -136,12 +136,12 @@ public class CubePrimer implements AutoCloseable {
         char lsb = (char) value;
         int idx = getBlockIndex(x, y, z);
         this.data[idx] = lsb;
-        if (value > 0xFFFF) {
+        /*if (value > 0xFFFF) {
             if (extData == null) {
                 extData = new byte[4096];
             }
             extData[idx] = (byte) (value >>> 16);
-        }
+        }*/
     }
 
     /**

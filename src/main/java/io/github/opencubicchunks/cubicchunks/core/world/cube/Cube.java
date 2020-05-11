@@ -49,6 +49,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ClassInheritanceMultiMap;
@@ -424,13 +425,7 @@ public class Cube implements ICube {
      */
     @Override
     public Biome getBiome(BlockPos pos) {
-        if (this.blockBiomeArray == null)
-            return this.getColumn().getBiome(pos, world.getBiomeProvider());
-        int biomeX = Coords.blockToBiome(pos.getX());
-        int biomeZ = Coords.blockToBiome(pos.getZ());
-        int biomeId = this.blockBiomeArray[AddressTools.getBiomeAddress(biomeX, biomeZ)] & 255;
-        Biome biome = Biome.getBiome(biomeId);
-        return biome;
+        return Biomes.FOREST;
     }
 
     @SuppressWarnings({"deprecation", "RedundantSuppression"})
