@@ -24,20 +24,14 @@
  */
 package io.github.opencubicchunks.cubicchunks.core.asm.mixin.fixes.common;
 
-import io.github.opencubicchunks.cubicchunks.core.CubicChunksConfig;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.NoiseGeneratorPerlin;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(Biome.class)
 public abstract class MixinBiomeTemperatureConfig {
-
-    @Shadow @Final protected static NoiseGeneratorPerlin TEMPERATURE_NOISE;
-
     @Shadow public abstract float getDefaultTemperature();
 
     /**
@@ -48,14 +42,7 @@ public abstract class MixinBiomeTemperatureConfig {
      */
     @SuppressWarnings("OverwriteModifiers")
     @Overwrite
-    public float getTemperature(BlockPos pos) { // this must be non-final for galacticraft compatibility https://github.com/SpongePowered/Mixin/issues/347
-        if (pos.getY() > CubicChunksConfig.biomeTemperatureCenterY) {
-            float noise = (float) (TEMPERATURE_NOISE.getValue((double) ((float) pos.getX() / 8.0F), (double) ((float) pos.getZ() / 8.0F)) * 4.0D);
-            int y = Math.min(pos.getY(), CubicChunksConfig.biomeTemperatureScaleMaxY);
-            return this.getDefaultTemperature() +
-                (noise + y - CubicChunksConfig.biomeTemperatureCenterY) * CubicChunksConfig.biomeTemperatureHeightFactor;
-        } else {
-            return this.getDefaultTemperature();
-        }
+    public float getTemperature(BlockPos pos) {
+        return this.getDefaultTemperature();
     }
 }
