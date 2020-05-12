@@ -24,6 +24,8 @@
  */
 package io.github.opencubicchunks.cubicchunks.core.server.chunkio;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import cubicchunks.regionlib.util.Utils;
 import io.github.opencubicchunks.cubicchunks.api.util.CubePos;
 import io.github.opencubicchunks.cubicchunks.core.CubicChunks;
@@ -65,6 +67,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 public class LeveldbCubeIO implements ICubeIO {
     public static LeveldbCubeIO OVERWORLD_INSTANCE;
@@ -116,6 +119,11 @@ public class LeveldbCubeIO implements ICubeIO {
     private ConcurrentMap<ChunkPos, NBTTagCompound> columnsToSave;
     @Nonnull
     private ConcurrentMap<CubePos, NBTTagCompound> cubesToSave;
+    private final Cache<CubePos, NBTTagCompound> savedCubesCache = CacheBuilder.newBuilder()
+            .concurrencyLevel(1)
+            .softValues()
+            .expireAfterWrite(10L, TimeUnit.SECONDS)
+            .build();
     public DB columnDb;
     public DB cubeDb;
 
@@ -231,7 +239,7 @@ public class LeveldbCubeIO implements ICubeIO {
         DB db = this.getCubeDb();
         NBTTagCompound nbt;
         NBTTagCompound saveEntry;
-        if ((saveEntry = this.cubesToSave.get(new CubePos(column.x, cubeY, column.z))) != null) {
+        if ((saveEntry = this.savedCubesCache.getIfPresent(new CubePos(column.x, cubeY, column.z))) != null) {
             nbt = saveEntry;
         } else {
             // does the database have the cube?
@@ -275,8 +283,10 @@ public class LeveldbCubeIO implements ICubeIO {
     public void saveCube(Cube cube) {
         // NOTE: this function blocks the world thread, so make it fast
 
-        this.cubesToSave.put(cube.getCoords(), IONbtWriter.write(cube));
+        NBTTagCompound compound = IONbtWriter.write(cube);
         cube.markSaved();
+        this.cubesToSave.put(cube.getCoords(), compound);
+        this.savedCubesCache.put(cube.getCoords(), compound);
 
         // signal the IO thread to process the save queue
         ThreadedFileIOBase.getThreadedIOInstance().queueIO(this);

@@ -6,7 +6,7 @@ import org.iq80.leveldb.CompressionType;
 /**
  * @author DaPorkchop_
  */
-@Config(modid = CubicChunks.MODID, category = "leveldb")
+@Config(modid = CubicChunks.MODID, name = "LevelDB", category = "leveldb")
 public class LeveldbConfig {
     @Config.LangKey("cubicchunks.config.use_leveldb")
     @Config.Comment("Use leveldb-mcpe as the storage format. This can significantly reduce world sizes, but may not run correctly on all platforms.\n" +
