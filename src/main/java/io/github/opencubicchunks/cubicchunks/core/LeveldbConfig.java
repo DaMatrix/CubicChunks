@@ -19,4 +19,7 @@ public class LeveldbConfig {
 
     @Config.RequiresMcRestart
     public static CompressionType cubeCompressionType = CompressionType.ZLIB_RAW;
+
+    @Config.RequiresMcRestart
+    public static boolean readOnly = false;
 }

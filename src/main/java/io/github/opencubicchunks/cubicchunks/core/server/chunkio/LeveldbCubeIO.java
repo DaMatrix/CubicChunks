@@ -266,30 +266,40 @@ public class LeveldbCubeIO implements ICubeIO {
 
     @Override
     public void saveColumn(Chunk column) {
-        // NOTE: this function blocks the world thread
-        // make it as fast as possible by offloading processing to the IO thread
-        // except we have to write the NBT in this thread to avoid problems
-        // with concurrent access to world data structures
+        if (LeveldbConfig.readOnly) {
+            //only set column as not dirty
+            column.setModified(false);
+        } else {
+            // NOTE: this function blocks the world thread
+            // make it as fast as possible by offloading processing to the IO thread
+            // except we have to write the NBT in this thread to avoid problems
+            // with concurrent access to world data structures
 
-        // add the column to the save queue
-        this.columnsToSave.put(column.getPos(), IONbtWriter.write(column));
-        column.setModified(false);
+            // add the column to the save queue
+            this.columnsToSave.put(column.getPos(), IONbtWriter.write(column));
+            column.setModified(false);
 
-        // signal the IO thread to process the save queue
-        ThreadedFileIOBase.getThreadedIOInstance().queueIO(this);
+            // signal the IO thread to process the save queue
+            ThreadedFileIOBase.getThreadedIOInstance().queueIO(this);
+        }
     }
 
     @Override
     public void saveCube(Cube cube) {
-        // NOTE: this function blocks the world thread, so make it fast
+        if (LeveldbConfig.readOnly) {
+            //only set cube as not dirty
+            cube.markSaved();
+        } else {
+            // NOTE: this function blocks the world thread, so make it fast
 
-        NBTTagCompound compound = IONbtWriter.write(cube);
-        cube.markSaved();
-        this.cubesToSave.put(cube.getCoords(), compound);
-        this.savedCubesCache.put(cube.getCoords(), compound);
+            NBTTagCompound compound = IONbtWriter.write(cube);
+            cube.markSaved();
+            this.cubesToSave.put(cube.getCoords(), compound);
+            this.savedCubesCache.put(cube.getCoords(), compound);
 
-        // signal the IO thread to process the save queue
-        ThreadedFileIOBase.getThreadedIOInstance().queueIO(this);
+            // signal the IO thread to process the save queue
+            ThreadedFileIOBase.getThreadedIOInstance().queueIO(this);
+        }
     }
 
     @Override
