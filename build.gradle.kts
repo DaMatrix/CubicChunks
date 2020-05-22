@@ -147,7 +147,7 @@ dependencies {
     testCompile("org.mockito:mockito-core:2.1.0-RC.2")
     testCompile("org.spongepowered:launchwrappertestsuite:1.0-SNAPSHOT")
 
-    coreShadow("net.daporkchop:leveldb-mcpe-jni:0.0.8-SNAPSHOT") {
+    coreShadow("net.daporkchop:leveldb-mcpe-jni:0.0.9-SNAPSHOT") {
         isTransitive = false
     }
     coreShadow("net.daporkchop.lib:natives:0.5.4-SNAPSHOT") {

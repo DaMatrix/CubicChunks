@@ -57,10 +57,10 @@ public class MixinMinecraftServer {
         return 18000 << 1; //every 30 mins
     }
 
-    @Redirect(
+    /*@Redirect(
             method = "Lnet/minecraft/server/MinecraftServer;tick()V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;saveAllWorlds(Z)V"))
     private void makeSaveVerbose(MinecraftServer server, boolean verbose) {
         server.saveAllWorlds(false);
-    }
+    }*/
 }
